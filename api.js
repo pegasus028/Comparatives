@@ -158,6 +158,12 @@
     get lastError() { return state.lastError; },
     onModeChange: null,
 
+    /* Called on a timer while offline: if an address is configured, flip back
+       to cloud and let the next real call prove it. */
+    retryCloud: function () {
+      if (state.url && state.mode !== 'cloud') { state.mode = 'cloud'; return true; }
+      return false;
+    },
     setUrl: function (u) {
       state.url = (u || '').trim();
       state.mode = state.url ? 'cloud' : 'demo';
@@ -225,7 +231,13 @@
     },
     demoPushAttempts: function (rows) { var d = db(); d.attempts = d.attempts.concat(rows); saveDb(d); },
     demoPushSessions: function (rows) { var d = db(); d.sessions = d.sessions.concat(rows); saveDb(d); },
-    demoHas: function (id) { return !!db().students[id]; }
+    demoHas: function (id) { return !!db().students[id]; },
+    /* Purely local — never touches the class server, so a preview can never
+       create a stray account in the teacher's sheet. */
+    demoLogin: function (id) {
+      var s = db().students[id];
+      return Promise.resolve(s ? { ok: true, progress: s.progress } : { ok: false, error: 'No local demo account.' });
+    }
   };
 
   global.API = API;

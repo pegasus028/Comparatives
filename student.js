@@ -10,7 +10,7 @@
   var S = {
     p: null,               // progress object
     pending: [],           // attempt rows waiting to sync
-    sessItems: 0, sessCorrect: 0,
+    sessItems: 0, sessCorrect: 0, sandbox: false,
     run: null,             // active run: {kind, items, i, results, lessonId, chId, hinted}
     simple: false,
     stageOpen: null,
@@ -37,7 +37,7 @@
 
   /* --------------------------------------------------------------- sync */
   function sync(force) {
-    if (!S.p) return Promise.resolve();
+    if (!S.p || S.sandbox) return Promise.resolve();
     S.p._readiness = P.readiness(S.p);      // derived column for the sheet
     var batch = S.pending; S.pending = [];
     return api.save(S.p, batch).then(function (r) {
@@ -50,18 +50,34 @@
     return function () { clearTimeout(t); t = setTimeout(sync, 1500); };
   })();
 
-  /* --------------------------------------------------------- mode banner */
-  function paintMode() {
+  /* ------------------------------------------------------- connection
+     Students never configure anything. The address ships with the page, so
+     the session is connected from the first click. If the network drops we
+     keep working, hold the unsent answers, and reconnect on our own. */
+  function paintLink() {
     var slot = $('#modebar-slot');
-    if (api.mode === 'cloud') { slot.innerHTML = ''; return; }
-    slot.innerHTML = '<div class="wrap"><div class="modebar">' +
-      '<span><b>Demo mode</b> &nbsp;Your progress is saved in this browser only. ' +
-      'Your teacher will not see it until the class server is connected.</span>' +
-      '<button class="btn sm" id="mb-connect">Connect</button></div></div>';
-    var b = $('#mb-connect');
-    if (b) b.addEventListener('click', function () { show('settings'); });
+    if (S.sandbox) {
+      slot.innerHTML = '<div class="wrap"><div class="modebar"><span><b>Preview</b> &nbsp;' +
+        'This is an example account for looking around. Nothing here is saved or sent to your teacher.' +
+        '</span></div></div>';
+      return;
+    }
+    if (api.mode === 'cloud' || !api.url) { slot.innerHTML = ''; return; }
+    slot.innerHTML = '<div class="wrap"><div class="offline">' +
+      '<b>Offline</b><span>No connection right now. Keep going — everything you answer is held ' +
+      'on this device and sent up as soon as the network is back.</span></div></div>';
   }
-  api.onModeChange = function () { paintMode(); toast('Lost the class server — saving locally for now.'); };
+  api.onModeChange = function () { paintLink(); };
+
+  setInterval(function () {
+    if (!S.p || S.sandbox || api.mode === 'cloud' || !api.url) return;
+    if (api.retryCloud()) {
+      sync().then(function () {
+        if (api.mode === 'cloud') { paintLink(); toast('Back online — your progress has been sent.'); }
+        else paintLink();
+      });
+    }
+  }, 20000);
 
   /* =====================================================================
      LOGIN
@@ -112,7 +128,8 @@
   $('#btn-demo').addEventListener('click', function () {
     var id = 'demo-traveller';
     if (!api.demoHas(id)) api.demoSeed([seedDemo(id)]);
-    api.login(id, 'demo').then(function (r) { start(r.progress || P.blank(id, 'Demo Traveller')); });
+    S.sandbox = true;                       /* never writes to the class sheet */
+    api.demoLogin(id).then(function (r) { start(r.progress || seedDemo(id)); });
   });
 
   /* A demo account opens partway through the map, so the first look shows a
@@ -151,10 +168,10 @@
     var isNewDay = P.touchDay(S.p);
     $('#screen-login').classList.add('hidden');
     $('#screen-app').classList.remove('hidden');
-    paintMode();
+    paintLink();
     paintHeader();
     show('map');
-    api.startSession(S.p.studentId);
+    if (!S.sandbox) api.startSession(S.p.studentId);
     var earned = P.checkBadges(S.p);
     sync();
     if (isNewDay && S.p.streak > 1) toast('Day ' + S.p.streak + ' in a row. Keep the streak alive.');
@@ -162,12 +179,12 @@
   }
 
   function logout() {
-    api.endSession(S.p.studentId, S.sessItems, S.sessCorrect);
+    if (!S.sandbox) api.endSession(S.p.studentId, S.sessItems, S.sessCorrect);
     sync().then(function () { location.reload(); });
   }
   $('#btn-out').addEventListener('click', logout);
   window.addEventListener('beforeunload', function () {
-    if (S.p) { api.endSession(S.p.studentId, S.sessItems, S.sessCorrect); sync(); }
+    if (S.p && !S.sandbox) { api.endSession(S.p.studentId, S.sessItems, S.sessCorrect); sync(); }
   });
 
   /* ----------------------------------------------------------- header UI */
@@ -231,6 +248,7 @@
 
       html += '<div class="' + cls + '" data-stage="' + st.id + '"><div class="dot"></div><div class="gate-card">';
       html += '<button class="gate-head" data-toggle="' + st.id + '"' + (unlocked ? '' : ' disabled') + '>' +
+        E.artBand(st.art, 'gate-art') +
         '<div class="gate-meta">' +
           '<div class="gate-line1">' +
             '<span class="gate-n">' + esc(st.gate) + '</span>' +
@@ -288,10 +306,12 @@
   function openLesson(lessonId) {
     var ls = E.Bank.lesson(lessonId);
     var paras = (S.simple && ls.theory.simple) ? ls.theory.simple : ls.theory.body;
+    var st = E.Bank.stage(+lessonId.charAt(1));
     var html = '<div class="play">' +
       '<div class="play-top"><button class="btn ghost sm" id="p-back">← Roadmap</button>' +
       '<span class="grow"></span><span class="qcount">Theory</span></div>' +
       '<div class="card theory">' +
+      E.artBand(st && st.art) +
       '<p class="kicker">' + esc(ls.cefr) + ' · Lesson</p>' +
       '<h3>' + esc(ls.name) + '</h3>' +
       '<p class="key">' + ls.theory.key + '</p>' +
@@ -331,16 +351,31 @@
     startRun('challenge', st.challenge.items, { chId: st.challenge.id, title: st.challenge.name });
   }
 
+  /* Types where seven seconds is a fair target. Construction tasks (build,
+     order, sort) take longer by their nature, so they run untimed rather
+     than dangling a bonus nobody can reach. */
+  var TIMED_TYPES = { choose: 1, equiv: 1, judge: 1, gap: 1, table: 1, pick: 1, spot: 1 };
+
   function renderQ() {
     var r = S.run, item = r.items[r.i];
     var prog = Math.round(100 * r.i / r.items.length);
     var canHint = r.kind === 'lesson' || r.kind === 'review';
+    var timed = r.kind !== 'test' && !!TIMED_TYPES[item.type];
+    var combo = r.combo || 0;
 
     $('#view-play').innerHTML = '<div class="play">' +
       '<div class="play-top">' +
         '<button class="btn ghost sm" id="p-quit">✕</button>' +
         '<div class="bar thin"><span style="width:' + prog + '%"></span></div>' +
+        (combo >= 3 ? '<span class="combo">▲ ' + combo + ' in a row</span>' : '') +
         '<span class="qcount">' + (r.i + 1) + ' / ' + r.items.length + '</span>' +
+        (timed ?
+          '<div class="timer" id="timer" title="Answer inside 7 seconds for a time bonus">' +
+            '<svg width="38" height="38" viewBox="0 0 38 38">' +
+              '<circle class="track" cx="19" cy="19" r="15" fill="none" stroke-width="4"></circle>' +
+              '<circle class="run" id="timer-run" cx="19" cy="19" r="15" fill="none" stroke-width="4" ' +
+                'stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="0"></circle>' +
+            '</svg><b id="timer-n">7</b></div>' : '') +
       '</div>' +
       '<div class="card qcard">' +
         '<div class="qtype"><span>' + esc(E.TYPE_LABEL[item.type] || 'Question') + '</span><span class="lv">' + esc(item.level) + '</span></div>' +
@@ -357,6 +392,24 @@
     var view = E.mount(item, host);
     r.t0 = Date.now();
     var answered = false;
+    var tick = null;
+
+    if (timed) {
+      var ring = $('#timer-run'), num = $('#timer-n'), box = $('#timer');
+      var CIRC = 94.2;
+      tick = setInterval(function () {
+        var left = Math.max(0, E.SPEED_MS - (Date.now() - r.t0));
+        ring.setAttribute('stroke-dashoffset', String(CIRC * (1 - left / E.SPEED_MS)));
+        if (left > 0) {
+          num.textContent = Math.ceil(left / 1000);
+        } else {
+          box.classList.add('cold');
+          num.textContent = '—';
+          clearInterval(tick); tick = null;
+        }
+      }, 100);
+    }
+    function stopTimer() { if (tick) { clearInterval(tick); tick = null; } }
 
     host.addEventListener('respond', function () {
       if (!answered) $('#p-check').disabled = !view.hasResponse();
@@ -364,7 +417,7 @@
 
     $('#p-quit').addEventListener('click', function () {
       if (r.results.length && !confirm('Leave now? This attempt will not be saved.')) return;
-      S.run = null; show('map');
+      stopTimer(); S.run = null; show('map');
     });
 
     var hintBtn = $('#p-hint');
@@ -380,25 +433,35 @@
     $('#p-check').addEventListener('click', function () {
       if (answered) return next();
       answered = true;
+      var ms = Date.now() - r.t0;
+      stopTimer();
       var out = view.check();
       view.lock();
-      var ms = Date.now() - r.t0;
       var hinted = !!r.thisHinted; r.thisHinted = false;
+      var fast = timed && !hinted && out.correct && ms <= E.SPEED_MS;
 
-      var row = P.recordAttempt(S.p, item, out.correct, ms, hinted);
+      var row = P.recordAttempt(S.p, item, out.correct, ms, hinted, fast);
       row.given = String(out.givenText).slice(0, 160);
       row.expected = String(out.expectedText).slice(0, 160);
       row.mode = r.kind;
       S.pending.push(row);
-      S.sessItems++; if (out.correct) S.sessCorrect++;
+      S.sessItems++;
+      if (out.correct) { S.sessCorrect++; r.combo = (r.combo || 0) + 1; } else { r.combo = 0; }
       r.results.push({ item: item, correct: out.correct, given: out.givenText, expected: out.expectedText });
 
       $('#feedback').innerHTML =
         '<div class="verdict ' + (out.correct ? 'ok' : 'no') + '">' +
-          '<div class="verdict-h">' + (out.correct ? '✓ Correct' : '✕ Not quite') + '</div>' +
+          '<div class="verdict-h">' + (out.correct ? '✓ Correct' : '✕ Not quite') +
+            (fast ? '<span class="bonus-note">⚡ time bonus +' + E.XP_SPEED + '</span>' : '') + '</div>' +
           (out.correct ? '' : '<div class="verdict-exp">You chose: ' + esc(out.givenText) + '<br>Answer: ' + esc(out.expectedText) + '</div>') +
           '<div class="verdict-w">' + item.why + '</div>' +
         '</div>';
+
+      if (out.correct && S.p.lastGain) {
+        var f = E.el('span', 'xpfloat' + (fast ? '' : ' plain'), '+' + S.p.lastGain);
+        $('.qfoot').appendChild(f);
+        setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 1200);
+      }
 
       var btn = $('#p-check');
       btn.textContent = r.i + 1 >= r.items.length ? 'See your result' : 'Next →';
@@ -409,6 +472,7 @@
     });
 
     function next() {
+      stopTimer();
       r.i++;
       if (r.i >= r.items.length) finishRun(); else renderQ();
     }
@@ -605,29 +669,24 @@
      SETTINGS
      ===================================================================== */
   function paintSettings() {
+    var linked = api.mode === 'cloud';
     $('#view-settings').innerHTML = '<div class="sect-h"><h2>Settings</h2></div>' +
       '<div class="card settings">' +
         '<div class="field"><label>Signed in as</label>' +
         '<p style="font-weight:600">' + esc(S.p.displayName) + ' <span style="color:var(--ink-3);font-weight:400">(' + esc(S.p.studentId) + ')</span></p></div>' +
-        '<div class="row"><div class="field"><label for="s-url">Class server address</label>' +
-        '<input type="text" id="s-url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(api.url || '') + '" spellcheck="false"></div>' +
-        '<button class="btn" id="s-save">Save</button></div>' +
-        '<p class="tiny">Your teacher will give you this address. Without it the app still works, but your progress stays on this device. ' +
-        'Current mode: <strong>' + (api.mode === 'cloud' ? 'connected to the class server' : 'demo, saved in this browser') + '</strong>.' +
-        (api.lastError ? '<br>Last error: ' + esc(api.lastError) : '') + '</p>' +
         '<div class="field"><label>Reading level</label>' +
         '<button class="btn sm" id="s-simple" style="align-self:flex-start">' +
         (S.simple ? 'Theory is in simple English — switch back' : 'Use simpler English in the theory') + '</button></div>' +
+        '<div class="field"><label>Class server</label>' +
+        '<p style="font-size:.9rem;color:var(--ink-2)">' +
+        (linked ? 'Connected. Everything you do is saved to your teacher\'s class sheet automatically.'
+                : 'Not reachable at the moment. Your answers are being held on this device and will be sent as soon as the connection returns.') +
+        '</p></div>' +
+        '<div class="field"><label>Account</label>' +
+        '<button class="btn sm" id="s-out" style="align-self:flex-start">Log out</button></div>' +
       '</div>';
-    $('#s-save').addEventListener('click', function () {
-      api.setUrl($('#s-url').value);
-      api.ping().then(function (r) {
-        paintMode();
-        toast(r.ok ? 'Connected to the class server.' : 'Could not reach that address — still in demo mode.');
-        paintSettings();
-      });
-    });
     $('#s-simple').addEventListener('click', function () { S.simple = !S.simple; paintSettings(); });
+    $('#s-out').addEventListener('click', logout);
   }
 
   setMode('in');

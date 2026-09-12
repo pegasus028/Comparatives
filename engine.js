@@ -75,6 +75,117 @@
     }
   };
 
+
+  /* ------------------------------------------------------------------ art
+     Hand-drawn scene banners. Inline SVG so they need no network, scale
+     cleanly, and pick up the theme tokens in both light and dark. */
+  var ART = {
+    lounge:
+      '<rect x="186" y="10" width="122" height="62" rx="6" fill="var(--surface)" stroke="var(--accent-line)" stroke-width="1.5"/>' +
+      '<circle cx="270" cy="28" r="9" fill="var(--gold)" opacity=".55"/>' +
+      '<path d="M196 58 L232 44 L240 47 L214 62 Z" fill="var(--accent)"/>' +
+      '<path d="M222 50 L228 38 L233 39 L230 52 Z" fill="var(--accent)"/>' +
+      '<rect x="186" y="66" width="122" height="6" fill="var(--accent-line)" opacity=".5"/>' +
+      '<g fill="var(--accent)">' +
+      '<rect x="16" y="46" width="34" height="10" rx="4"/><rect x="56" y="46" width="34" height="10" rx="4"/><rect x="96" y="46" width="34" height="10" rx="4"/>' +
+      '<rect x="18" y="30" width="30" height="18" rx="5" opacity=".55"/><rect x="58" y="30" width="30" height="18" rx="5" opacity=".55"/><rect x="98" y="30" width="30" height="18" rx="5" opacity=".55"/>' +
+      '<rect x="20" y="56" width="5" height="16" rx="2"/><rect x="120" y="56" width="5" height="16" rx="2"/>' +
+      '<rect x="14" y="54" width="118" height="4" rx="2"/></g>',
+    desk:
+      '<rect x="24" y="52" width="272" height="30" rx="5" fill="var(--accent)"/>' +
+      '<rect x="24" y="52" width="272" height="7" rx="3" fill="var(--gold)" opacity=".8"/>' +
+      '<rect x="40" y="16" width="74" height="34" rx="4" fill="var(--surface)" stroke="var(--accent-line)" stroke-width="1.5"/>' +
+      '<g fill="var(--accent)" opacity=".6"><rect x="48" y="24" width="42" height="4" rx="2"/><rect x="48" y="32" width="56" height="4" rx="2"/><rect x="48" y="40" width="30" height="4" rx="2"/></g>' +
+      '<path d="M146 50 a14 14 0 0 1 28 0 z" fill="var(--gold)"/><rect x="142" y="48" width="36" height="4" rx="2" fill="var(--gold)"/>' +
+      '<g fill="var(--accent)" opacity=".55"><rect x="206" y="18" width="8" height="26" rx="4"/><rect x="226" y="18" width="8" height="26" rx="4"/><rect x="246" y="18" width="8" height="26" rx="4"/><rect x="266" y="18" width="8" height="26" rx="4"/></g>' +
+      '<rect x="200" y="12" width="80" height="4" rx="2" fill="var(--accent)"/>',
+    tags:
+      '<line x1="0" y1="14" x2="320" y2="14" stroke="var(--accent-line)" stroke-width="2"/>' +
+      '<g stroke="var(--accent)" stroke-width="1.5"><line x1="70" y1="14" x2="70" y2="28"/><line x1="160" y1="14" x2="160" y2="22"/><line x1="250" y1="14" x2="250" y2="34"/></g>' +
+      '<path d="M44 28 h52 a6 6 0 0 1 6 6 v30 a6 6 0 0 1 -6 6 h-52 l-16 -21 z" fill="var(--accent)"/>' +
+      '<circle cx="52" cy="48" r="4" fill="var(--accent-soft)"/>' +
+      '<path d="M134 22 h52 a6 6 0 0 1 6 6 v26 a6 6 0 0 1 -6 6 h-52 l-14 -19 z" fill="var(--gold)"/>' +
+      '<circle cx="141" cy="41" r="3.5" fill="var(--accent-soft)"/>' +
+      '<path d="M224 34 h52 a6 6 0 0 1 6 6 v34 a6 6 0 0 1 -6 6 h-52 l-16 -23 z" fill="var(--accent)" opacity=".55"/>' +
+      '<circle cx="232" cy="57" r="4" fill="var(--accent-soft)"/>',
+    timetable:
+      '<circle cx="52" cy="48" r="28" fill="var(--surface)" stroke="var(--accent)" stroke-width="3"/>' +
+      '<line x1="52" y1="48" x2="52" y2="30" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>' +
+      '<line x1="52" y1="48" x2="67" y2="55" stroke="var(--gold)" stroke-width="3" stroke-linecap="round"/>' +
+      '<circle cx="52" cy="48" r="3" fill="var(--accent)"/>' +
+      '<g fill="var(--accent)">' +
+      '<rect x="100" y="20" width="46" height="9" rx="2"/><rect x="154" y="20" width="86" height="9" rx="2" opacity=".45"/><rect x="248" y="20" width="44" height="9" rx="2" opacity=".7"/>' +
+      '<rect x="100" y="38" width="46" height="9" rx="2" opacity=".7"/><rect x="154" y="38" width="64" height="9" rx="2" opacity=".45"/><rect x="248" y="38" width="44" height="9" rx="2"/>' +
+      '<rect x="100" y="56" width="46" height="9" rx="2"/><rect x="154" y="56" width="96" height="9" rx="2" opacity=".45"/><rect x="258" y="56" width="34" height="9" rx="2" opacity=".7"/></g>' +
+      '<rect x="100" y="74" width="192" height="3" rx="1.5" fill="var(--gold)"/>',
+    contract:
+      '<rect x="96" y="8" width="112" height="82" rx="5" fill="var(--surface)" stroke="var(--accent-line)" stroke-width="1.5"/>' +
+      '<g fill="var(--accent)"><rect x="108" y="20" width="56" height="6" rx="3"/>' +
+      '<g opacity=".4"><rect x="108" y="34" width="88" height="4" rx="2"/><rect x="108" y="43" width="76" height="4" rx="2"/><rect x="108" y="52" width="88" height="4" rx="2"/><rect x="108" y="61" width="48" height="4" rx="2"/></g></g>' +
+      '<rect x="108" y="70" width="60" height="4" rx="2" fill="var(--gold)"/>' +
+      '<circle cx="214" cy="58" r="22" fill="none" stroke="var(--accent)" stroke-width="3.5"/>' +
+      '<line x1="230" y1="74" x2="248" y2="88" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>' +
+      '<circle cx="214" cy="58" r="22" fill="var(--gold)" opacity=".13"/>',
+    board:
+      '<g fill="var(--gold)">' +
+      '<rect x="18" y="16" width="52" height="13" rx="2"/><rect x="80" y="16" width="96" height="13" rx="2" opacity=".55"/><rect x="186" y="16" width="40" height="13" rx="2" opacity=".8"/><rect x="238" y="16" width="64" height="13" rx="2" opacity=".35"/>' +
+      '<rect x="18" y="36" width="52" height="13" rx="2" opacity=".8"/><rect x="80" y="36" width="72" height="13" rx="2" opacity=".45"/><rect x="186" y="36" width="40" height="13" rx="2"/><rect x="238" y="36" width="48" height="13" rx="2" opacity=".55"/>' +
+      '<rect x="18" y="56" width="52" height="13" rx="2" opacity=".6"/><rect x="80" y="56" width="110" height="13" rx="2" opacity=".45"/><rect x="200" y="56" width="26" height="13" rx="2" opacity=".9"/><rect x="238" y="56" width="64" height="13" rx="2" opacity=".3"/>' +
+      '<rect x="18" y="76" width="52" height="13" rx="2" opacity=".4"/><rect x="80" y="76" width="84" height="13" rx="2" opacity=".3"/><rect x="186" y="76" width="40" height="13" rx="2" opacity=".5"/></g>' +
+      '<g stroke="var(--ink)" stroke-width="1.5" opacity=".85"><line x1="0" y1="22" x2="320" y2="22"/><line x1="0" y1="42" x2="320" y2="42"/><line x1="0" y1="62" x2="320" y2="62"/><line x1="0" y1="82" x2="320" y2="82"/></g>',
+    nightflight:
+      '<circle cx="268" cy="26" r="13" fill="var(--gold)" opacity=".85"/>' +
+      '<g fill="var(--gold)" opacity=".6"><circle cx="40" cy="20" r="1.8"/><circle cx="88" cy="34" r="1.4"/><circle cx="130" cy="16" r="1.8"/><circle cx="176" cy="30" r="1.3"/><circle cx="222" cy="14" r="1.6"/><circle cx="66" cy="52" r="1.3"/><circle cx="292" cy="52" r="1.5"/></g>' +
+      '<path d="M60 66 L168 40 L192 44 L118 76 Z" fill="var(--accent)"/>' +
+      '<path d="M140 52 L154 30 L164 32 L158 56 Z" fill="var(--accent)" opacity=".75"/>' +
+      '<path d="M180 44 L200 40 L206 44 L186 50 Z" fill="var(--accent)" opacity=".6"/>' +
+      '<g stroke="var(--accent)" stroke-width="2.5" opacity=".35" stroke-linecap="round"><line x1="14" y1="74" x2="54" y2="70"/><line x1="6" y1="84" x2="40" y2="81"/></g>',
+    arrivals:
+      '<path d="M12 62 h296 a10 10 0 0 1 0 20 h-296 a10 10 0 0 1 0 -20 z" fill="var(--accent)" opacity=".35"/>' +
+      '<g stroke="var(--accent)" stroke-width="2" opacity=".6"><line x1="40" y1="62" x2="34" y2="82"/><line x1="90" y1="62" x2="84" y2="82"/><line x1="140" y1="62" x2="134" y2="82"/><line x1="190" y1="62" x2="184" y2="82"/><line x1="240" y1="62" x2="234" y2="82"/><line x1="290" y1="62" x2="284" y2="82"/></g>' +
+      '<rect x="44" y="28" width="54" height="36" rx="5" fill="var(--accent)"/><rect x="62" y="21" width="18" height="9" rx="4" fill="var(--accent)"/>' +
+      '<rect x="44" y="42" width="54" height="4" fill="var(--gold)" opacity=".8"/>' +
+      '<rect x="124" y="34" width="46" height="30" rx="5" fill="var(--gold)"/><rect x="139" y="28" width="16" height="8" rx="4" fill="var(--gold)"/>' +
+      '<rect x="196" y="24" width="58" height="40" rx="5" fill="var(--accent)" opacity=".6"/><rect x="216" y="17" width="18" height="9" rx="4" fill="var(--accent)" opacity=".6"/>' +
+      '<rect x="196" y="40" width="58" height="4" fill="var(--surface)" opacity=".7"/>',
+    hotel:
+      '<rect x="86" y="14" width="148" height="70" rx="4" fill="var(--accent)"/>' +
+      '<g fill="var(--surface)" opacity=".85"><rect x="100" y="26" width="20" height="16" rx="2"/><rect x="130" y="26" width="20" height="16" rx="2"/><rect x="160" y="26" width="20" height="16" rx="2"/><rect x="190" y="26" width="20" height="16" rx="2"/>' +
+      '<rect x="100" y="50" width="20" height="16" rx="2"/><rect x="130" y="50" width="20" height="16" rx="2" opacity=".45"/><rect x="160" y="50" width="20" height="16" rx="2"/><rect x="190" y="50" width="20" height="16" rx="2" opacity=".45"/></g>' +
+      '<rect x="142" y="68" width="26" height="16" rx="2" fill="var(--gold)"/>' +
+      '<rect x="86" y="6" width="148" height="9" rx="3" fill="var(--gold)"/>' +
+      '<g fill="var(--gold)" opacity=".9"><circle cx="250" cy="22" r="3"/><circle cx="262" cy="22" r="3"/><circle cx="274" cy="22" r="3"/></g>',
+    shop:
+      '<g fill="var(--accent)"><rect x="24" y="40" width="126" height="4" rx="2"/><rect x="24" y="76" width="126" height="4" rx="2"/></g>' +
+      '<g fill="var(--accent)" opacity=".75"><rect x="32" y="20" width="16" height="20" rx="3"/><rect x="56" y="14" width="14" height="26" rx="3"/><rect x="78" y="24" width="20" height="16" rx="3"/><rect x="106" y="18" width="16" height="22" rx="3"/><rect x="130" y="26" width="14" height="14" rx="3"/>' +
+      '<rect x="34" y="58" width="22" height="18" rx="3"/><rect x="64" y="52" width="16" height="24" rx="3"/><rect x="88" y="60" width="24" height="16" rx="3"/><rect x="120" y="54" width="18" height="22" rx="3"/></g>' +
+      '<path d="M190 22 h74 a8 8 0 0 1 8 8 v30 a8 8 0 0 1 -8 8 h-74 l-20 -23 z" fill="var(--gold)"/>' +
+      '<circle cx="198" cy="45" r="5" fill="var(--accent-soft)"/>' +
+      '<g fill="var(--ink)" opacity=".25"><rect x="212" y="36" width="44" height="6" rx="3"/><rect x="212" y="48" width="30" height="6" rx="3"/></g>',
+    suitcase:
+      '<rect x="62" y="22" width="90" height="60" rx="7" fill="var(--accent)"/>' +
+      '<rect x="94" y="14" width="26" height="10" rx="5" fill="var(--accent)"/>' +
+      '<rect x="62" y="44" width="90" height="6" fill="var(--gold)"/>' +
+      '<rect x="99" y="40" width="16" height="14" rx="3" fill="var(--surface)" opacity=".9"/>' +
+      '<rect x="168" y="30" width="90" height="52" rx="7" fill="var(--surface)" stroke="var(--accent-line)" stroke-width="1.5"/>' +
+      '<g fill="var(--accent)" opacity=".6"><rect x="178" y="40" width="70" height="8" rx="4"/><rect x="178" y="54" width="52" height="8" rx="4"/><rect x="178" y="68" width="64" height="8" rx="4"/></g>' +
+      '<circle cx="270" cy="26" r="10" fill="var(--gold)" opacity=".65"/>'
+  };
+  /* Two scenes are drawn on a dark ground; their band has to match or you
+     get a hard edge where the artwork stops. */
+  var ART_DARK = { board: 1, nightflight: 1 };
+  function artSvg(name) {
+    var d = ART[name];
+    if (!d) return '';
+    return '<svg class="art" viewBox="0 0 320 96" preserveAspectRatio="xMidYMid meet" ' +
+      'role="presentation" aria-hidden="true">' + d + '</svg>';
+  }
+  function artBand(name, cls) {
+    if (!ART[name]) return '';
+    return '<div class="artband' + (ART_DARK[name] ? ' dark' : '') + (cls ? ' ' + cls : '') + '">' +
+      artSvg(name) + '</div>';
+  }
+
   /* ------------------------------------------------------------ rendering */
   /* Every renderer returns { response, hasResponse, check, lock } */
 
@@ -116,6 +227,10 @@
   }
 
   function renderStem(host, item) {
+    if (item.art && ART[item.art]) {
+      var band = el('div', null, artBand(item.art));
+      host.appendChild(band.firstChild);
+    }
     if (item.given) {
       var g = el('div', 'given');
       g.innerHTML = '<span class="given-k">Given</span><span class="given-t">' + item.given + '</span>';
@@ -218,6 +333,101 @@
             else if (i === chosen) c.classList.add('wrong');
           });
         }
+      };
+    },
+
+    sort: function (host, item) {
+      renderStem(host, item);
+      var placed = {};                       /* item index -> bin key */
+      var pool = el('div', 'sort-pool');
+      var bins = el('div', 'sort-bins');
+      bins.style.setProperty('--cols', String(item.bins.length));
+      var chips = [], binEls = {};
+      var locked = false;
+
+      function paint() {
+        item.bins.forEach(function (b) {
+          var drop = binEls[b.key].querySelector('.sort-drop');
+          drop.innerHTML = '';
+          var any = false;
+          item.items.forEach(function (it, i) {
+            if (placed[i] !== b.key) return;
+            any = true;
+            var c = el('button', 'chip-i in');
+            c.type = 'button';
+            c.innerHTML = it.text;
+            if (locked) c.classList.add(it.bin === b.key ? 'right' : 'wrong');
+            c.disabled = locked;
+            c.addEventListener('click', function () {
+              if (locked) return;
+              delete placed[i]; paint();
+              host.dispatchEvent(new CustomEvent('respond', { bubbles: true }));
+            });
+            drop.appendChild(c);
+          });
+          if (!any) drop.appendChild(el('span', 'sort-empty', 'tap a word, then this box'));
+        });
+        chips.forEach(function (c, i) {
+          c.classList.toggle('gone', placed[i] != null);
+          c.disabled = placed[i] != null || locked;
+        });
+        var all = Object.keys(placed).length === item.items.length;
+        pool.classList.toggle('spent', all);
+        var done = pool.querySelector('.sort-done');
+        if (all && !done) pool.appendChild(el('span', 'sort-done', 'All placed — press Check'));
+        if (!all && done) pool.removeChild(done);
+      }
+
+      var picked = -1;
+      function selectChip(i) {
+        picked = picked === i ? -1 : i;
+        chips.forEach(function (c, j) { c.classList.toggle('armed', j === picked); });
+        Object.keys(binEls).forEach(function (k) { binEls[k].classList.toggle('ready', picked >= 0); });
+      }
+
+      item.items.forEach(function (it, i) {
+        var c = el('button', 'chip-i');
+        c.type = 'button';
+        c.innerHTML = it.text;
+        c.addEventListener('click', function () { if (!locked) selectChip(i); });
+        chips.push(c); pool.appendChild(c);
+      });
+
+      item.bins.forEach(function (b) {
+        var box = el('div', 'sort-bin');
+        box.innerHTML = '<div class="sort-h"><b>' + b.label + '</b>' +
+          (b.hint ? '<span>' + esc(b.hint) + '</span>' : '') + '</div><div class="sort-drop"></div>';
+        box.addEventListener('click', function () {
+          if (locked || picked < 0) return;
+          placed[picked] = b.key;
+          selectChip(picked);
+          paint();
+          host.dispatchEvent(new CustomEvent('respond', { bubbles: true }));
+        });
+        binEls[b.key] = box; bins.appendChild(box);
+      });
+
+      host.appendChild(pool);
+      host.appendChild(bins);
+      paint();
+
+      return {
+        response: function () { return JSON.stringify(placed); },
+        hasResponse: function () { return Object.keys(placed).length === item.items.length; },
+        check: function () {
+          var wrong = item.items.filter(function (it, i) { return placed[i] !== it.bin; });
+          var label = {};
+          item.bins.forEach(function (b) { label[b.key] = b.label; });
+          return {
+            correct: wrong.length === 0,
+            givenText: item.items.map(function (it, i) { return it.text + '→' + (label[placed[i]] || '?'); }).join('; '),
+            expectedText: item.bins.map(function (b) {
+              return b.label + ': ' + item.items.filter(function (x) { return x.bin === b.key; })
+                .map(function (x) { return x.text; }).join(', ');
+            }).join(' | ')
+          };
+        },
+        lock: function () { locked = true; selectChip(-1); paint(); }
       };
     },
 
@@ -386,18 +596,20 @@
   var TYPE_LABEL = {
     choose: 'Choose', equiv: 'Same meaning', judge: 'True / False / Can\'t tell',
     gap: 'Complete the dialogue', table: 'Read the table', pick: 'Follow the instruction',
+    sort: 'Put each one in the right box',
     spot: 'Find the mistake', build: 'Build the sentence', order: 'Put them in order'
   };
 
   /* ------------------------------------------------------------- progress */
   var XP_CORRECT = 10, XP_FIRST_TRY = 4, XP_LESSON = 40, XP_CHALLENGE = 120;
+  var XP_SPEED = 6, SPEED_MS = 7000;   /* answer inside 7s for the time bonus */
   var PASS_LESSON = 0.6, PASS_CHALLENGE = 0.75;
 
   function blank(id, name) {
     return {
       studentId: id, displayName: name || id,
       xp: 0, streak: 0, longestStreak: 0, lastActiveDate: null,
-      sessions: 0, runBest: 0, run: 0, reclaimed: 0,
+      sessions: 0, runBest: 0, run: 0, reclaimed: 0, speedBonuses: 0,
       lessons: {}, challenges: {}, badges: [], review: {},
       stats: { seen: 0, correct: 0, byTag: {} },
       assignment: null, created: new Date().toISOString()
@@ -462,18 +674,24 @@
   }
 
   /* ------------------------------------------------------------- recording */
-  function recordAttempt(p, item, correct, ms, hinted) {
+  function recordAttempt(p, item, correct, ms, hinted, fast) {
     p.stats.seen++;
     if (correct) { p.stats.correct++; p.run++; p.runBest = Math.max(p.runBest, p.run); }
     else { p.run = 0; }
     var t = p.stats.byTag[item.tag] || (p.stats.byTag[item.tag] = { a: 0, c: 0 });
     t.a++; if (correct) t.c++;
-    p.xp += correct ? (hinted ? XP_CORRECT - XP_FIRST_TRY : XP_CORRECT) : 0;
+    var gain = 0;
+    if (correct) {
+      gain = hinted ? XP_CORRECT - XP_FIRST_TRY : XP_CORRECT;
+      if (fast) { gain += XP_SPEED; p.speedBonuses = (p.speedBonuses || 0) + 1; }
+    }
+    p.xp += gain;
+    p.lastGain = gain;
     scheduleReview(p, item.id, correct);
     return {
       ts: new Date().toISOString(), studentId: p.studentId, itemId: item.id,
       stage: STAGE_OF[item.id], type: item.type, tag: item.tag, level: item.level,
-      correct: correct ? 1 : 0, ms: ms || 0, hinted: hinted ? 1 : 0
+      correct: correct ? 1 : 0, ms: ms || 0, hinted: hinted ? 1 : 0, fast: fast ? 1 : 0
     };
   }
 
@@ -523,6 +741,7 @@
     tailwind: function (p) { return p.runBest >= 10; },
     rebooked: function (p) { return Object.keys(p.challenges).some(function (k) { return p.challenges[k].comeback; }); },
     nonstop: function (p) { return !!p._nonstop; },
+    quickdraw: function (p) { return (p.speedBonuses || 0) >= 25; },
     frequent: function (p) { return stageClearedCount(p) >= 8; }
   };
   function checkBadges(p) {
@@ -564,8 +783,8 @@
 
   global.Engine = {
     el: el, esc: esc, shuffle: shuffle, norm: norm, today: today, daysBetween: daysBetween,
-    mount: mount, TYPE_LABEL: TYPE_LABEL, Bank: Bank,
-    PASS_LESSON: PASS_LESSON, PASS_CHALLENGE: PASS_CHALLENGE,
+    mount: mount, TYPE_LABEL: TYPE_LABEL, Bank: Bank, art: artSvg, artBand: artBand, ART: ART,
+    PASS_LESSON: PASS_LESSON, PASS_CHALLENGE: PASS_CHALLENGE, SPEED_MS: SPEED_MS, XP_SPEED: XP_SPEED,
     Progress: {
       blank: blank, rank: rank, stageClearedCount: stageClearedCount,
       lessonsDone: lessonsDone, challengeUnlocked: challengeUnlocked, stageUnlocked: stageUnlocked,

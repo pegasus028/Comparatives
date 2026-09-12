@@ -311,6 +311,11 @@
       if (it.type === 'spot') h += '<div class="ctx">' + it.words.map(function (w, j) { return esc(w) + '<sub>' + (j + 1) + '</sub>'; }).join(' ') + '</div><div class="ctx">Write the number of the wrong word, and correct it.</div>';
       if (it.type === 'build') h += '<div class="ctx">Words: ' + it.tiles.map(esc).join(' / ') + '</div><div class="ctx">_______________________________________________</div>';
       if (it.type === 'order') h += '<ol>' + it.items.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol><div class="ctx">Write the letters in the correct order: ______</div>';
+      if (it.type === 'sort') {
+        h += '<div class="ctx">Words: ' + it.items.map(function (x) { return esc(x.text); }).join(' / ') + '</div>' +
+          '<table><tr>' + it.bins.map(function (b) { return '<th>' + esc(b.label) + '</th>'; }).join('') + '</tr>' +
+          '<tr>' + it.bins.map(function () { return '<td style="height:44pt"></td>'; }).join('') + '</tr></table>';
+      }
       if (it.type === 'pick') h += '<ol>' + it.items.map(function (x) { return '<li>' + esc(x.name) + ' — ' + esc(x.price) + (x.note ? ' (' + esc(x.note) + ')' : '') + '</li>'; }).join('') + '</ol>';
       if (it.options) h += '<ol type="a">' + it.options.map(function (o) { return '<li>' + esc(stripTags(o)) + '</li>'; }).join('') + '</ol>';
       if (it.type === 'judge') h += '<ol type="a"><li>True</li><li>False</li><li>Can\'t tell</li></ol>';
@@ -325,6 +330,10 @@
       else if (it.type === 'order') ans = it.items.join(' → ');
       else if (it.type === 'pick') ans = it.items[it.answer].name;
       else if (it.type === 'judge') ans = ['True', 'False', "Can't tell"][it.answer];
+      else if (it.type === 'sort') ans = it.bins.map(function (b) {
+        return b.label + ': ' + it.items.filter(function (x) { return x.bin === b.key; })
+          .map(function (x) { return x.text; }).join(', ');
+      }).join('  |  ');
       else ans = 'abcd'[it.answer] + ') ' + stripTags(it.options[it.answer]);
       h += '<div class="pq"><b>' + (i + 1) + '. ' + esc(ans) + '</b>' +
         '<div class="ctx">' + esc(stripTags(it.why)) + '</div>' +

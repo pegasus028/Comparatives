@@ -49,6 +49,7 @@ const BADGES = [
   { id: 'tailwind',    name: 'Tailwind',          perk: 'Arriving early.',                        icon: 'wind',   how: 'Answer 10 in a row correctly.' },
   { id: 'rebooked',    name: 'Rebooked',          perk: 'A second chance, taken.',                icon: 'redo',   how: 'Pass a stage challenge you previously failed.' },
   { id: 'nonstop',     name: 'Non-stop',          perk: 'No connections.',                        icon: 'arrow',  how: 'Finish a whole stage in one session.' },
+  { id: 'quickdraw',   name: 'Fast Track',        perk: 'Straight through security.',             icon: 'bolt',   how: 'Earn 25 time bonuses by answering inside 7 seconds.' },
   { id: 'frequent',    name: 'Frequent Flyer',    perk: 'The whole world is open.',               icon: 'globe',  how: 'Clear all 8 stages.' }
 ];
 
@@ -259,7 +260,7 @@ const REMEDIATION = {
   register: {
     name: 'Precision and hedging in academic comparison',
     principle: 'In academic writing the differential slot is where the information lives, and the hedge is where the credibility lives.',
-    reteach: 'Bare: "rail use is better". Precise: "rail journeys rose 41% while car journeys fell 6%". Also teach percentage points vs percent — from 12% to 18% is six percentage points, or a 50% increase. And hedged superlatives: one of the most heavily used corridors, arguably the most efficient.',
+    reteach: 'Bare: "rail use is better". Precise: "rail journeys rose 41% while car journeys fell 6%". Also teach percentage points vs percent — from 20% to 30% is ten percentage points, or a 50% increase. And hedged superlatives: one of the most heavily used corridors, arguably the most efficient.',
     activities: [
       'Ban the bare comparative in one Task 1 paragraph; require a figure or a graded adverb every time.',
       'Percentage-point trap: three sentences, students identify which misuse percent for percentage points.'
@@ -272,7 +273,7 @@ const STAGES = [];
 
 /* ===== STAGE 1 — DEPARTURE LOUNGE ======================================= */
 STAGES.push({
-  id: 's1', n: 1, name: 'Departure Lounge', cefr: 'A2–B1',
+  id: 's1', art: 'lounge', n: 1, name: 'Departure Lounge', cefr: 'A2–B1',
   gate: 'Gate 1',
   blurb: 'You have decided to travel. Before you can compare anything, you need to know what CAN be compared — and how to build the form.',
   lessons: [
@@ -315,13 +316,14 @@ STAGES.push({
           answer: 0,
           why: 'Yes — but only because a scale has been created: <em>more of it is electrified</em>. Speakers invent a scale when they need one. The box reading ("electric or not") would be impossible.' },
         { id: 's1l1-04', type: 'pick', tag: 'gradability', level: 'A2',
-          shop: 'Adjectives on a travel website',
-          stem: 'Your teacher asks: which of these CANNOT take a comparative?',
+          shop: 'Words from a hotel listing',
+          art: 'hotel',
+          stem: 'Four words from the same listing. Which one CANNOT take a comparative?',
           items: [
-            { name: 'comfortable', price: 'scale?', note: 'very comfortable ✓' },
-            { name: 'wooden', price: 'scale?', note: 'very wooden ✗' },
-            { name: 'expensive', price: 'scale?', note: 'very expensive ✓' },
-            { name: 'crowded', price: 'scale?', note: 'very crowded ✓' }
+            { name: 'comfortable', price: '', note: '"a comfortable double room"' },
+            { name: 'wooden', price: '', note: '"a wooden cabin by the lake"' },
+            { name: 'expensive', price: '', note: '"not the most expensive option"' },
+            { name: 'crowded', price: '', note: '"the pool gets crowded at noon"' }
           ],
           answer: 1,
           why: '<em>Wooden</em> classifies the material. A cabin is made of wood or it is not — no scale, no comparative.' },
@@ -377,12 +379,20 @@ STAGES.push({
           options: ['more quiet', 'quieter', 'more quieter', 'quietest'],
           answer: 1,
           why: '<em>Quiet</em> is a single-piece two-syllable word, so <em>-er</em> is natural. <em>More quiet</em> is not wrong, but <em>quieter</em> is what a native speaker says.' },
-        { id: 's1l2-04', type: 'order', tag: 'form-er-more', level: 'B1',
-          stem: 'Put these four adjectives in order, from the one that MOST clearly takes -er to the one that MOST clearly takes more.',
-          items: ['cheap', 'busy', 'clever', 'comfortable'],
-          why: 'One syllable (<em>cheap</em>) is certain. <em>Busy</em> ends in -y, also certain. <em>Clever</em> is a single piece and accepts both. <em>Comfortable</em> is long and derived — <em>more</em> only.' },
+        { id: 's1l2-04', type: 'sort', tag: 'form-er-more', level: 'B1',
+          art: 'suitcase',
+          stem: 'Six words from a holiday brochure. Put each one in the box where it belongs.',
+          bins: [
+            { key: 'er', label: 'takes -er', hint: 'short, one piece' },
+            { key: 'more', label: 'takes more', hint: 'long, or built from a suffix' }
+          ],
+          items: [
+            { text: 'cheap', bin: 'er' }, { text: 'busy', bin: 'er' }, { text: 'narrow', bin: 'er' },
+            { text: 'comfortable', bin: 'more' }, { text: 'crowded', bin: 'more' }, { text: 'relaxing', bin: 'more' }
+          ],
+          why: 'Look for a suffix, not a syllable count. <em>Cheap, busy, narrow</em> are single pieces. <em>Comfort+able</em>, <em>crowd+ed</em> and <em>relax+ing</em> are already built from something, so they refuse a second ending.' },
         { id: 's1l2-05', type: 'build', tag: 'form-er-more', level: 'B1',
-          stem: 'Build the sentence: the hostel costs less, and the flight is more tiring than the train.',
+          stem: 'Hostel ฿400 a night against ฿1,900 for the hotel — but reaching it means a 04:00 flight with two connections. Put both facts into one sentence.',
           tiles: ['The', 'hostel', 'is', 'cheaper', 'and', 'the', 'flight', 'is', 'more', 'tiring.'],
           solution: 'The hostel is cheaper and the flight is more tiring.',
           why: 'Two different strategies in one sentence, chosen by the shape of each word: <em>cheap</em> is one piece, <em>tiring</em> is tire + ing.' },
@@ -433,7 +443,7 @@ STAGES.push({
           answer: 1,
           why: 'It is grammatical but empty. A comparative with no standard cannot be checked — which is exactly why advertisers write them.' },
         { id: 's1l3-04', type: 'build', tag: 'than-basic', level: 'B1',
-          stem: 'Build a complete comparison about the two airports.',
+          stem: 'Don Mueang sits 24 km from the city centre; Suvarnabhumi is 32 km out. Make the comparison, and name what you are comparing it with.',
           tiles: ['Don', 'Mueang', 'is', 'closer', 'to', 'the', 'city', 'than', 'Suvarnabhumi.'],
           solution: 'Don Mueang is closer to the city than Suvarnabhumi.',
           why: 'Comparative + <em>than</em> + the named standard. The claim is now checkable.' },
@@ -450,7 +460,7 @@ STAGES.push({
 
 /* ===== STAGE 2 — BOOKING DESK ========================================== */
 STAGES.push({
-  id: 's2', n: 2, name: 'Booking Desk', cefr: 'B1',
+  id: 's2', art: 'desk', n: 2, name: 'Booking Desk', cefr: 'B1',
   gate: 'Gate 2',
   blurb: 'Comparing two options is easy. Now you have twelve hotels on screen and you must pick the one — which means superlatives.',
   lessons: [
@@ -503,7 +513,7 @@ STAGES.push({
           answer: 1,
           why: 'This is the point of a superlative: it needs a set of rivals. <em>The</em> marks the winner as unique, not the group as empty.' },
         { id: 's2l1-05', type: 'build', tag: 'superlative-the', level: 'B1',
-          stem: 'Build: this was the most comfortable train on the whole trip.',
+          stem: 'You took nine trains on the holiday. This one had the best seats of the lot. Say so.',
           tiles: ['This', 'was', 'the', 'most', 'comfortable', 'train', 'of', 'the', 'trip.'],
           solution: 'This was the most comfortable train of the trip.',
           why: '<em>Comfortable</em> is derived, so <em>most</em>; the set is a period, so <em>of</em>.' }
@@ -565,7 +575,7 @@ STAGES.push({
           answer: 1,
           why: '<em>One of the cheapest</em> places Osaka inside a small group at the bottom of the scale — it does not claim the single lowest position.' },
         { id: 's2l2-06', type: 'build', tag: 'superlative-set', level: 'B1+',
-          stem: 'Build: Haneda is one of the busiest airports in the world.',
+          stem: 'Haneda moves 85 million passengers a year. Only a handful of airports anywhere are busier. Say so.',
           tiles: ['Haneda', 'is', 'one', 'of', 'the', 'busiest', 'airports', 'in', 'the', 'world.'],
           solution: 'Haneda is one of the busiest airports in the world.',
           why: 'Plural noun after <em>one of the</em>, then <em>in</em> because the set is a place.' }
@@ -616,7 +626,7 @@ STAGES.push({
           items: ['the worst room we have had', 'worse than last year', 'better than expected', 'the best night of the trip'],
           why: 'Superlative bottom → comparative bottom → comparative top → superlative top. The two comparatives sit inside the two superlatives.' },
         { id: 's2l3-05', type: 'build', tag: 'irregular', level: 'B1',
-          stem: 'Build: the food was better but the beds were worse.',
+          stem: 'Second hotel: excellent breakfast, terrible mattresses. Compare it with the first in one sentence.',
           tiles: ['The', 'food', 'was', 'better', 'but', 'the', 'beds', 'were', 'worse.'],
           solution: 'The food was better but the beds were worse.',
           why: 'Two suppletive forms, neither taking <em>more</em> or <em>-er</em>.' }
@@ -627,7 +637,7 @@ STAGES.push({
 
 /* ===== STAGE 3 — PRICE COMPARISON ====================================== */
 STAGES.push({
-  id: 's3', n: 3, name: 'Price Comparison', cefr: 'B1+',
+  id: 's3', art: 'tags', n: 3, name: 'Price Comparison', cefr: 'B1+',
   gate: 'Gate 3',
   blurb: 'Two tabs open, four prices, and a friend who wants to argue. Equal, not equal, twice as much, and the difference between fewer and less.',
   lessons: [
@@ -680,7 +690,7 @@ STAGES.push({
           answer: 1,
           why: 'A negated equative reverses the direction: <em>not as cheap as X</em> = more expensive than X.' },
         { id: 's3l1-05', type: 'build', tag: 'equative', level: 'B1+',
-          stem: 'Build: the hostel is just as central as the hotel.',
+          stem: 'Both are a four-minute walk from the station. Say the hostel gives up nothing on location.',
           tiles: ['The', 'hostel', 'is', 'just', 'as', 'central', 'as', 'the', 'hotel.'],
           solution: 'The hostel is just as central as the hotel.',
           why: '<em>Just</em> sits inside the frame, reinforcing the floor: at least as central, and probably no more.' }
@@ -800,10 +810,21 @@ STAGES.push({
           answer: 1,
           why: 'Stops are counted → <em>fewer</em>. Three hours is a measured amount → <em>less than</em>.' },
         { id: 's3l3-06', type: 'build', tag: 'less-fewer', level: 'B2',
-          stem: 'Build: there are fewer buses but less traffic on Sundays.',
+          stem: 'Sunday timetable: half the usual services, and the roads are empty. Say both in one sentence.',
           tiles: ['There', 'are', 'fewer', 'buses', 'but', 'less', 'traffic', 'on', 'Sundays.'],
           solution: 'There are fewer buses but less traffic on Sundays.',
-          why: 'One countable noun, one uncountable, in a single sentence — the cleanest way to feel the split.' }
+          why: 'One countable noun, one uncountable, in a single sentence — the cleanest way to feel the split.' },
+        { id: 's3l3-08', type: 'sort', tag: 'less-fewer', level: 'B2',
+          stem: 'Six nouns from a train timetable. Which word goes in front of each?',
+          bins: [
+            { key: 'fewer', label: 'fewer', hint: 'you can count them' },
+            { key: 'less', label: 'less', hint: 'a mass or an amount' }
+          ],
+          items: [
+            { text: 'delays', bin: 'fewer' }, { text: 'passengers', bin: 'fewer' }, { text: 'carriages', bin: 'fewer' },
+            { text: 'congestion', bin: 'less' }, { text: 'luggage', bin: 'less' }, { text: 'than 20 minutes', bin: 'less' }
+          ],
+          why: 'The last one is the trap. Minutes look countable, but a stretch of time is a measured <em>amount</em>, so it takes <em>less</em> — as do money and distance.' }
       ]
     }
   ]
@@ -811,7 +832,7 @@ STAGES.push({
 
 /* ===== STAGE 4 — TIMETABLE ============================================= */
 STAGES.push({
-  id: 's4', n: 4, name: 'Timetable', cefr: 'B2',
+  id: 's4', art: 'timetable', n: 4, name: 'Timetable', cefr: 'B2',
   gate: 'Gate 4',
   blurb: '"It is faster" tells nobody anything. This stage is about the slot in front of the comparative — the one that says how much.',
   lessons: [
@@ -866,7 +887,7 @@ STAGES.push({
           items: ['marginally cheaper', 'slightly cheaper', 'considerably cheaper', 'vastly cheaper'],
           why: 'The vague degree words form a real scale, and choosing the right rung is what makes writing sound precise rather than approximate.' },
         { id: 's4l1-05', type: 'build', tag: 'differential', level: 'B2',
-          stem: 'Build a checkable claim about the two ferries.',
+          stem: 'Car ferry: 2 h 10. Fast ferry: 1 h 30. Make a claim a passenger could check against the timetable.',
           tiles: ['The', 'fast', 'ferry', 'is', 'forty', 'minutes', 'quicker', 'than', 'the', 'car', 'ferry.'],
           solution: 'The fast ferry is forty minutes quicker than the car ferry.',
           why: 'Differential + comparative + <em>than</em> + standard. All four slots filled.' },
@@ -927,7 +948,7 @@ STAGES.push({
           answer: 1,
           why: '<em>Better</em> is a comparative, so it takes a gap-measuring word: <em>far</em>, <em>much</em>, <em>a lot</em>.' },
         { id: 's4l2-05', type: 'build', tag: 'very-much', level: 'B2',
-          stem: 'Build: the airport hotel was very noisy but much cheaper.',
+          stem: 'The airport hotel had aircraft overhead all night — and cost half what the city hotel did. One sentence.',
           tiles: ['The', 'airport', 'hotel', 'was', 'very', 'noisy', 'but', 'much', 'cheaper.'],
           solution: 'The airport hotel was very noisy but much cheaper.',
           why: 'Both modifiers in one sentence, each with the form it belongs to.' }
@@ -993,7 +1014,7 @@ STAGES.push({
 
 /* ===== STAGE 5 — TERMS & CONDITIONS ==================================== */
 STAGES.push({
-  id: 's5', n: 5, name: 'Terms & Conditions', cefr: 'B2',
+  id: 's5', art: 'contract', n: 5, name: 'Terms & Conditions', cefr: 'B2',
   gate: 'Gate 5',
   blurb: 'The small print of comparison. What exactly is being compared with what — and why "cheaper than Tokyo" is the most common C1 writing error in the language.',
   lessons: [
@@ -1049,10 +1070,25 @@ STAGES.push({
           answer: 1,
           why: 'A ticket is being priced against a person. The repair is <em>than my sister\'s</em> — a possessive that stands for "my sister\'s ticket".' },
         { id: 's5l1-05', type: 'build', tag: 'cat-match', level: 'B2',
-          stem: 'Build a correctly matched comparison about the two cities.',
+          stem: 'Bangkok fares average ฿45; Tokyo fares average ฿380. Compare them, making sure both sides of <em>than</em> are the same kind of thing.',
           tiles: ['Fares', 'in', 'Bangkok', 'are', 'lower', 'than', 'those', 'in', 'Tokyo.'],
           solution: 'Fares in Bangkok are lower than those in Tokyo.',
           why: '<em>Those</em> stands for "fares", so both sides of <em>than</em> are now sets of fares.' },
+        { id: 's5l1-07', type: 'sort', tag: 'cat-match', level: 'B2+',
+          stem: 'Each sentence needs a repair after <em>than</em>. Which repair does each one take?',
+          bins: [
+            { key: 'those', label: 'than those in', hint: 'plural, countable' },
+            { key: 'that', label: 'than that of', hint: 'singular or uncountable' }
+          ],
+          items: [
+            { text: 'Fares in Bangkok are lower than …', bin: 'those' },
+            { text: 'Hotels in Kyoto are dearer than …', bin: 'those' },
+            { text: 'Beaches in Krabi are quieter than …', bin: 'those' },
+            { text: 'The climate of Hokkaido is colder than …', bin: 'that' },
+            { text: 'The population of Osaka is smaller than …', bin: 'that' },
+            { text: 'The traffic in Chiang Mai is lighter than …', bin: 'that' }
+          ],
+          why: 'The pro-form has to match the noun it stands for. Plural countable nouns take <em>those</em>; singular and uncountable nouns take <em>that</em>.' },
         { id: 's5l1-06', type: 'choose', tag: 'cat-match', level: 'B2+',
           stem: 'Which version would a careful academic writer choose?',
           options: ['Rail use in Japan is higher than Thailand.', 'Rail use in Japan is higher than Thailand is.', 'Rail use is higher in Japan than in Thailand.', 'Rail use in Japan is higher than Thailand does.'],
@@ -1110,7 +1146,7 @@ STAGES.push({
           answer: 1,
           why: 'Two different measurements — height of coach against height of bridge — so the full clause has to be spelled out. This is comparative subdeletion.' },
         { id: 's5l2-05', type: 'build', tag: 'than-clause', level: 'B2+',
-          stem: 'Build: the queue was longer than we had expected.',
+          stem: 'You allowed twenty minutes for security. It took fifty-five. Say so, keeping a full clause after <em>than</em>.',
           tiles: ['The', 'queue', 'was', 'longer', 'than', 'we', 'had', 'expected.'],
           solution: 'The queue was longer than we had expected.',
           why: 'A full clause after <em>than</em>, with the adjective deleted — the normal, invisible case.' }
@@ -1164,7 +1200,7 @@ STAGES.push({
           answer: 1,
           why: 'Three things at once: <em>any</em> for the polarity, the possessive apostrophe for category match, and the correct frame.' },
         { id: 's5l3-05', type: 'build', tag: 'any-ever', level: 'B2+',
-          stem: 'Build: this is cheaper than any hotel we have looked at.',
+          stem: 'You have looked at nine hotels. This one beats every one of them on price. Say so.',
           tiles: ['This', 'is', 'cheaper', 'than', 'any', 'hotel', 'we', 'have', 'looked', 'at.'],
           solution: 'This is cheaper than any hotel we have looked at.',
           why: '<em>Any</em> inside a <em>than</em>-clause, plus the present perfect that these structures attract.' }
@@ -1175,7 +1211,7 @@ STAGES.push({
 
 /* ===== STAGE 6 — DEPARTURES BOARD ====================================== */
 STAGES.push({
-  id: 's6', n: 6, name: 'Departures Board', cefr: 'B2+',
+  id: 's6', art: 'board', n: 6, name: 'Departures Board', cefr: 'B2+',
   gate: 'Gate 6',
   blurb: 'Superlatives, properly. When the disappears, how the set is really chosen, and the three different words spelled most.',
   lessons: [
@@ -1229,7 +1265,7 @@ STAGES.push({
           answer: 1,
           why: 'The missing article is the clue. An entity comparison would read <em>the busiest hotel in the city</em>.' },
         { id: 's6l1-05', type: 'build', tag: 'zero-article', level: 'B2+',
-          stem: 'Build: the station is quietest just after lunch.',
+          stem: 'Same station, different hours: shoulder to shoulder at 08:00, almost empty at 14:00. Describe the afternoon lull.',
           tiles: ['The', 'station', 'is', 'quietest', 'just', 'after', 'lunch.'],
           solution: 'The station is quietest just after lunch.',
           why: 'The <em>the</em> belongs to <em>station</em>, not to the superlative — there is no article in front of <em>quietest</em>.' }
@@ -1284,7 +1320,7 @@ STAGES.push({
           answer: 0,
           why: '64% is well below the next worst (78%), so <em>by far the least punctual</em> holds. The others each misstate the set or the data.' },
         { id: 's6l2-05', type: 'build', tag: 'superlative-set', level: 'B2+',
-          stem: 'Build a hedged superlative about the rail system.',
+          stem: 'You think the network is outstanding, but you cannot prove it is the single best. Make the claim so it survives a challenge.',
           tiles: ['It', 'is', 'arguably', 'one', 'of', 'the', 'most', 'efficient', 'systems', 'in', 'Asia.'],
           solution: 'It is arguably one of the most efficient systems in Asia.',
           why: 'Two hedges stacked — <em>arguably</em> and <em>one of</em> — plus a plural noun and an <em>in</em>-set. Textbook academic register.' }
@@ -1336,6 +1372,22 @@ STAGES.push({
           stem: 'Order these by how many things are being compared: none, two, all of them.',
           items: ['a most agreeable journey', 'the more agreeable of the two routes', 'the most agreeable route in the region'],
           why: 'Intensifier (no comparison at all) → comparative (two) → superlative (a whole set). The spelling of <em>most</em> tells you almost nothing; the article does.' },
+        { id: 's6l3-06', type: 'sort', tag: 'most-three', level: 'C1',
+          stem: 'Six phrases, three different words spelled <em>most</em>. Sort them.',
+          bins: [
+            { key: 'sup', label: 'the most', hint: 'the winner of a set' },
+            { key: 'int', label: 'a most', hint: '= very' },
+            { key: 'qty', label: 'most + noun', hint: '= the majority' }
+          ],
+          items: [
+            { text: 'the most punctual airline in Asia', bin: 'sup' },
+            { text: 'the most crowded platform on the line', bin: 'sup' },
+            { text: 'a most unusual delay', bin: 'int' },
+            { text: 'a most agreeable crossing', bin: 'int' },
+            { text: 'most travellers book online', bin: 'qty' },
+            { text: 'most of the passengers had boarded', bin: 'qty' }
+          ],
+          why: 'The article decides it, not the word. <em>The</em> + a set means superlative; <em>a</em> with no set at all means <em>very</em>; a bare noun means <em>the majority of</em>.' },
         { id: 's6l3-05', type: 'judge', tag: 'most-three', level: 'C1',
           given: 'Most of the passengers had already boarded.',
           stem: 'Is this a superlative?',
@@ -1348,7 +1400,7 @@ STAGES.push({
 
 /* ===== STAGE 7 — THE LONG HAUL ========================================= */
 STAGES.push({
-  id: 's7', n: 7, name: 'The Long Haul', cefr: 'C1',
+  id: 's7', art: 'nightflight', n: 7, name: 'The Long Haul', cefr: 'C1',
   gate: 'Gate 7',
   blurb: 'Two quantities moving together, trends that keep going, and a thousand-year-old fossil hiding in "the more, the merrier".',
   lessons: [
@@ -1384,7 +1436,7 @@ STAGES.push({
           answer: 4, fix: 'delete "and"',
           why: 'The correlative takes no conjunction. The comma alone joins the two halves.' },
         { id: 's7l1-02', type: 'build', tag: 'correlative', level: 'C1',
-          stem: 'Build: if the layover is longer, you spend more on food.',
+          stem: 'Airport food is expensive, and a long wait between flights means more meals. State the rule.',
           tiles: ['The', 'longer', 'the', 'layover,', 'the', 'more', 'you', 'spend', 'on', 'food.'],
           solution: 'The longer the layover, the more you spend on food.',
           why: 'Both comparatives fronted; the verb <em>is</em> is dropped in the first half.' },
@@ -1454,7 +1506,7 @@ STAGES.push({
           answer: 1,
           why: '<em>People</em> is countable, so <em>fewer</em>; and a trend needs the doubled form.' },
         { id: 's7l2-04', type: 'build', tag: 'incremental', level: 'C1',
-          stem: 'Build: the flights keep getting more and more expensive.',
+          stem: 'Fares have risen every quarter for three years, with no sign of stopping. Describe the trend.',
           tiles: ['Flights', 'are', 'getting', 'more', 'and', 'more', 'expensive.'],
           solution: 'Flights are getting more and more expensive.',
           why: 'Verb of change + doubled <em>more</em> + the adjective once.' },
@@ -1527,7 +1579,7 @@ STAGES.push({
 
 /* ===== STAGE 8 — ARRIVALS ============================================== */
 STAGES.push({
-  id: 's8', n: 8, name: 'Arrivals', cefr: 'C1',
+  id: 's8', art: 'arrivals', n: 8, name: 'Arrivals', cefr: 'C1',
   gate: 'Gate 8',
   blurb: 'Comparison without adjectives, the pairs that split into two meanings, and how a C1 writer actually builds a comparison paragraph.',
   lessons: [
@@ -1576,7 +1628,7 @@ STAGES.push({
           answer: 0,
           why: '<em>Lag behind</em> is a lexical downward comparative — worse on whatever measure is in play.' },
         { id: 's8l1-04', type: 'build', tag: 'beyond-adj', level: 'C1',
-          stem: 'Build a de-adjectival comparison: rail does better than road on short trips.',
+          stem: 'Under 600 km, trains beat cars on every measure. Say it without using <em>-er</em>, <em>more</em> or <em>than</em>.',
           tiles: ['Rail', 'outperforms', 'road', 'on', 'journeys', 'under', '600', 'km.'],
           solution: 'Rail outperforms road on journeys under 600 km.',
           why: 'No <em>-er</em>, no <em>more</em>, no <em>than</em> — and it is still a comparison, expressed more economically than any adjective could manage.' },
@@ -1655,29 +1707,29 @@ STAGES.push({
         body: [
           'Everything in this course reduces to two slots. Slot 4 is the standard (<em>compared to what?</em>). Slot 1 is the differential (<em>by how much?</em>). Fill both and a sentence reads as C1; leave either empty and it does not, whatever the vocabulary is doing.',
           '<strong>Weak:</strong> <em>Rail use is better than car use.</em><br><strong>Strong:</strong> <em>Between 2015 and 2024, rail journeys per head rose 41% while car journeys fell 6% — a divergence of nearly 50 percentage points.</em>',
-          'Note that last phrase. <strong>Percentage points are not percent.</strong> A modal share moving from 12% to 18% has risen six <u>percentage points</u>, or by 50 <u>percent</u>. Mixing them up is a precision error examiners notice.',
+          'Note that last phrase. <strong>Percentage points are not percent.</strong> A share moving from 20% to 30% has risen ten <u>percentage points</u>, or by 50 <u>percent</u> — because ten out of the original twenty is half again. Mixing the two up is a precision error examiners notice.',
           'Hedge the claims you cannot prove. <em>arguably the most efficient</em>, <em>one of the most heavily used corridors</em>, <em>among the least reliable</em>, <em>broadly comparable with</em>. A hedged claim is stronger than an overstated one, because it survives scrutiny.',
           'And vary the machinery. A paragraph built entirely from <em>-er … than</em> reads as a drill. Rotate through: a comparative with a figure, an equative, a superlative with a delimited set, a lexical verb (<em>outperform, lag behind</em>), and a quantitative phrase (<em>up from … to …</em>).'
         ],
         simple: [
           'Always answer: <strong>compared to what?</strong> and <strong>by how much?</strong>',
           'Use a number if you have one: <em>41% higher</em> beats <em>much higher</em>.',
-          '12% → 18% is <strong>six percentage points</strong>, or a <strong>50% increase</strong>. Not the same thing.',
+          '20% → 30% is <strong>ten percentage points</strong>, or a <strong>50% increase</strong>. Two different questions.',
           'Soften claims you cannot prove: <em>arguably</em>, <em>one of the</em>, <em>among the</em>.',
           'Do not use <em>-er than</em> five times in one paragraph. Change the tool.'
         ],
         examples: [
           { s: 'Rail journeys rose <strong>41%</strong> while car journeys fell <strong>6%</strong>.', g: 'TWO FIGURES, NO BARE COMPARATIVES' },
-          { s: 'Modal share rose from 12% to 18% — six <strong>percentage points</strong>.', g: 'THE PRECISION TRAP, HANDLED CORRECTLY' },
+          { s: 'Rail\'s share rose from 20% to 30% — ten <strong>percentage points</strong>.', g: 'THE PRECISION TRAP, HANDLED CORRECTLY' },
           { s: 'It is <strong>arguably</strong> the most efficient network in the region.', g: 'HEDGE THAT SURVIVES SCRUTINY' }
         ]
       },
       items: [
         { id: 's8l3-01', type: 'choose', tag: 'register', level: 'C1',
-          stem: 'Modal share for rail rose from 12% to 18%. Which description is correct?',
-          options: ['It rose by six percent.', 'It rose by six percentage points, a 50% increase.', 'It rose by 50 percentage points.', 'It rose by 18 percent.'],
+          stem: 'Rail\'s share of journeys rose from 20% to 30%. Which description is correct?',
+          options: ['It rose by ten percent.', 'It rose by ten percentage points — which is a 50% increase.', 'It rose by 50 percentage points.', 'It rose by 30 percent.'],
           answer: 1,
-          why: 'The gap between the two figures is six percentage points; expressed as a proportion of the original, that is a 50% increase.' },
+          why: 'Count the gap between the two figures: 30 − 20 = ten <strong>percentage points</strong>. Now ask how big that gap is compared with where you started: ten out of twenty is half again, so a <strong>50% increase</strong>. Two different questions, two different answers.' },
         { id: 's8l3-02', type: 'spot', tag: 'register', level: 'C1',
           stem: 'One word turns a checkable claim into an empty one. Click it.',
           words: ['The', 'new', 'fleet', 'is', 'more', 'efficient.'],
@@ -1697,7 +1749,7 @@ STAGES.push({
           answer: 1,
           why: '<em>Arguably</em> concedes that the claim is contestable, which is what makes it defensible. <em>By far</em> and <em>definitely</em> strengthen it instead.' },
         { id: 's8l3-05', type: 'build', tag: 'register', level: 'C1',
-          stem: 'Build a C1 comparison with both slots filled.',
+          stem: 'Bangkok fares run about 18% below Tokyo\'s, though the figure moves. Write it with the number and a hedge.',
           tiles: ['Fares', 'are', 'around', '18%', 'lower', 'than', 'those', 'in', 'Tokyo.'],
           solution: 'Fares are around 18% lower than those in Tokyo.',
           why: 'Hedged figure in slot 1, category-matched standard in slot 4. Both questions answered in nine words.' },
@@ -1736,7 +1788,7 @@ const CHALLENGES = {
       options: ['The Georgian opened first.', 'The Grand Hyatt opened first.', 'The Georgian is the oldest hotel in town.', 'Both opened the same year.'],
       answer: 0, why: 'Older = built earlier. The comparative says nothing about any third hotel.' },
     { id: 's1ch-5', type: 'build', tag: 'form-er-more', level: 'B1',
-      stem: 'Build: the hostel costs less but the journey is more tiring.',
+      stem: 'The hostel saves you money. Getting there wears you out. Say both in one sentence.',
       tiles: ['The', 'hostel', 'is', 'cheaper', 'but', 'the', 'journey', 'is', 'more', 'tiring.'],
       solution: 'The hostel is cheaper but the journey is more tiring.',
       why: 'One single-piece word, one derived word — two different strategies in one sentence.' },
@@ -1748,10 +1800,17 @@ const CHALLENGES = {
       stem: 'Which word correctly completes: "The terminal was ___ packed."',
       options: ['very', 'absolutely', 'more', 'much'],
       answer: 1, why: '<em>Packed</em> is already at the top of the scale, so it takes <em>absolutely</em>, not <em>very</em>.' },
-    { id: 's1ch-8', type: 'order', tag: 'form-er-more', level: 'B1',
-      stem: 'Order these adjectives from the one that MOST clearly takes -er to the one that MOST clearly takes more.',
-      items: ['cheap', 'busy', 'clever', 'comfortable'],
-      why: 'One syllable → -y ending → single-piece disyllable → long derived word.' }
+    { id: 's1ch-8', type: 'sort', tag: 'form-er-more', level: 'B1',
+      stem: 'Sort these six into the right box.',
+      bins: [
+        { key: 'er', label: 'takes -er', hint: 'short, one piece' },
+        { key: 'more', label: 'takes more', hint: 'long, or built from a suffix' }
+      ],
+      items: [
+        { text: 'late', bin: 'er' }, { text: 'noisy', bin: 'er' }, { text: 'simple', bin: 'er' },
+        { text: 'expensive', bin: 'more' }, { text: 'tiring', bin: 'more' }, { text: 'careful', bin: 'more' }
+      ],
+      why: '<em>Late, noisy, simple</em> are single pieces. <em>Expens+ive</em>, <em>tir+ing</em> and <em>care+ful</em> already end in a suffix.' }
   ]},
 
   s2: { id: 's2ch', name: 'Boarding Check 2', items: [
@@ -1786,7 +1845,7 @@ const CHALLENGES = {
       options: ['in', 'of', 'at', 'on'], answer: 1,
       why: 'A holiday is a period of time, and periods take <em>of</em>.' },
     { id: 's2ch-8', type: 'build', tag: 'superlative-set', level: 'B1+',
-      stem: 'Build: Haneda is one of the busiest airports in the world.',
+      stem: 'Only a handful of airports on earth handle more passengers than Haneda. Say so.',
       tiles: ['Haneda', 'is', 'one', 'of', 'the', 'busiest', 'airports', 'in', 'the', 'world.'],
       solution: 'Haneda is one of the busiest airports in the world.',
       why: 'Plural after <em>one of the</em>, then <em>in</em> for a place.' }
@@ -1824,7 +1883,7 @@ const CHALLENGES = {
       options: ['twice as long as', 'twice longer than', 'two times more than', 'the longest of'],
       answer: 0, why: 'Exact ratio, so the equative frame — and it removes the 3×/4× ambiguity problem entirely.' },
     { id: 's3ch-8', type: 'choose', tag: 'superlative-set', level: 'B1+',
-      stem: 'Carried over from Stage 2 — which is correct?',
+      stem: 'Which sentence is correct?',
       options: ['It is one of the cheapest hotel in the city.', 'It is one of the cheapest hotels in the city.', 'It is one of a cheapest hotels in the city.', 'It is one of cheapest hotels in city.'],
       answer: 1, why: 'Plural noun after <em>one of the</em>, definite article intact, <em>in</em> for a place.' }
   ]},
@@ -1857,12 +1916,12 @@ const CHALLENGES = {
       words: ['Haneda', 'is', 'very', 'far', 'the', 'best', 'connected', 'airport', 'here.'],
       answer: 2, fix: 'by', why: 'The superlative intensifier is <em>by far</em>.' },
     { id: 's4ch-7', type: 'build', tag: 'differential', level: 'B2',
-      stem: 'Build a checkable claim about the two ferries.',
+      stem: 'Car ferry 2 h 10, fast ferry 1 h 30. Make a claim someone could check.',
       tiles: ['The', 'fast', 'ferry', 'is', 'forty', 'minutes', 'quicker', 'than', 'the', 'car', 'ferry.'],
       solution: 'The fast ferry is forty minutes quicker than the car ferry.',
       why: 'Differential, comparative, <em>than</em>, standard. All four slots filled.' },
     { id: 's4ch-8', type: 'choose', tag: 'less-fewer', level: 'B2',
-      stem: 'Carried over from Stage 3 — which is correct?',
+      stem: 'Which sentence is correct as written?',
       options: ['Fewer than 15 minutes to the gate.', 'Less than 15 minutes to the gate.', 'Fewer than 15 minute to the gate.', 'Less of 15 minutes to the gate.'],
       answer: 1, why: 'Minutes here are a measured amount, so <em>less</em> — the standard exception.' }
   ]},
@@ -1898,7 +1957,7 @@ const CHALLENGES = {
       options: ['Worse than some delays I have had.', 'Worse than any delay I have ever had.', 'As bad as the delays I have had.', 'Not the worst delay I have had.'],
       answer: 1, why: 'Superlative ↔ comparative + <em>any</em> is a standard transformation.' },
     { id: 's5ch-8', type: 'build', tag: 'cat-match', level: 'B2',
-      stem: 'Build a correctly matched comparison.',
+      stem: 'Bangkok fares average ฿45, Tokyo ฿380. Compare them so that prices meet prices.',
       tiles: ['Fares', 'in', 'Bangkok', 'are', 'lower', 'than', 'those', 'in', 'Tokyo.'],
       solution: 'Fares in Bangkok are lower than those in Tokyo.',
       why: '<em>Those</em> stands for "fares", so both sides now compare the same kind of thing.' }
@@ -1935,7 +1994,7 @@ const CHALLENGES = {
       options: ['the most crowded', 'most crowded', 'more crowded', 'crowded most'], answer: 1,
       why: 'One place, different times of day — conditions, so no article.' },
     { id: 's6ch-8', type: 'build', tag: 'superlative-set', level: 'B2+',
-      stem: 'Build a hedged superlative.',
+      stem: 'Make a claim about the network that you could defend if someone disagreed.',
       tiles: ['It', 'is', 'arguably', 'one', 'of', 'the', 'most', 'efficient', 'systems', 'in', 'Asia.'],
       solution: 'It is arguably one of the most efficient systems in Asia.',
       why: 'Two hedges, a plural noun and a named set — academic register in eleven words.' }
@@ -1968,7 +2027,7 @@ const CHALLENGES = {
       options: ['"Slow" cannot take -er.', 'It compares which WORD fits, and that only takes "more".', '"Late" is not an adjective.', 'It needs "the".'],
       answer: 1, why: 'Metalinguistic comparison takes <em>more</em> whatever the adjective\'s length.' },
     { id: 's7ch-7', type: 'build', tag: 'correlative', level: 'C1',
-      stem: 'Build: if the layover is longer, you spend more on food.',
+      stem: 'Every extra hour between flights costs you another meal. State the rule.',
       tiles: ['The', 'longer', 'the', 'layover,', 'the', 'more', 'you', 'spend', 'on', 'food.'],
       solution: 'The longer the layover, the more you spend on food.',
       why: 'Both comparatives fronted; <em>is</em> dropped in the first half.' },
@@ -1997,9 +2056,9 @@ const CHALLENGES = {
       options: ['The ferry.', 'The flight.', 'Both the same.', 'Not stated.'],
       answer: 1, why: '<em>The latter</em> is always the second of the two just named.' },
     { id: 's8ch-5', type: 'choose', tag: 'register', level: 'C1',
-      stem: 'Modal share rose from 12% to 18%. Which is correct?',
-      options: ['A rise of six percent.', 'A rise of six percentage points, or 50%.', 'A rise of 50 percentage points.', 'A rise of 18 percent.'],
-      answer: 1, why: 'The gap is six percentage points; as a proportion of the original that is a 50% increase.' },
+      stem: 'Rail\'s share rose from 20% to 30%. Which is correct?',
+      options: ['A rise of ten percent.', 'A rise of ten percentage points, or 50%.', 'A rise of 50 percentage points.', 'A rise of 30 percent.'],
+      answer: 1, why: 'The gap is ten <strong>percentage points</strong> (30 − 20). As a share of where it started, ten out of twenty is a <strong>50% increase</strong>.' },
     { id: 's8ch-6', type: 'gap', tag: 'register', level: 'C1',
       lines: [{ who: 'Supervisor', text: 'You cannot prove it is the best. Soften it.' }, { who: 'Revision', text: 'The network is ___ the most efficient in the region.' }],
       options: ['definitely', 'arguably', 'very much', 'by far'], answer: 1,
@@ -2009,7 +2068,7 @@ const CHALLENGES = {
       items: ['Rail travel got better.', 'Rail travel is more popular than car travel.', 'Rail use rose considerably while car use declined.', 'Rail journeys rose 41% while car journeys fell 6%.'],
       why: 'Vague verb → bare comparative → graded adverb → figures.' },
     { id: 's8ch-8', type: 'build', tag: 'register', level: 'C1',
-      stem: 'Build a C1 comparison with both slots filled.',
+      stem: 'Fares here sit roughly 18% under Tokyo\'s, give or take. Write the comparison with a figure and a hedge.',
       tiles: ['Fares', 'are', 'around', '18%', 'lower', 'than', 'those', 'in', 'Tokyo.'],
       solution: 'Fares are around 18% lower than those in Tokyo.',
       why: 'Hedged figure in the differential slot, category-matched standard after <em>than</em>.' }
@@ -2042,8 +2101,19 @@ const VERIFY = {
       given: 'The Riverside opened before the Marina.',
       stem: 'Which means the same?', options: ['The Marina is older than the Riverside.', 'The Riverside is older than the Marina.', 'They opened together.', 'The Marina is the oldest.'],
       answer: 1, why: 'Opened earlier = older.' },
+    { id: 'v1-7', type: 'sort', tag: 'form-er-more', level: 'B1',
+      stem: 'Sort these six words.',
+      bins: [
+        { key: 'er', label: 'takes -er', hint: 'short, one piece' },
+        { key: 'more', label: 'takes more', hint: 'long, or built from a suffix' }
+      ],
+      items: [
+        { text: 'safe', bin: 'er' }, { text: 'dirty', bin: 'er' }, { text: 'quiet', bin: 'er' },
+        { text: 'delayed', bin: 'more' }, { text: 'reliable', bin: 'more' }, { text: 'famous', bin: 'more' }
+      ],
+      why: '<em>Delay+ed</em>, <em>reli+able</em> and <em>fam+ous</em> are already built from a suffix.' },
     { id: 'v1-6', type: 'build', tag: 'form-er-more', level: 'B1',
-      stem: 'Build: the coach is slower but far more comfortable.',
+      stem: 'Coach: six hours, reclining seats. Train: four hours, hard benches. One sentence.',
       tiles: ['The', 'coach', 'is', 'slower', 'but', 'far', 'more', 'comfortable.'],
       solution: 'The coach is slower but far more comfortable.', why: 'Two strategies chosen by word shape.' }
   ],
@@ -2113,7 +2183,7 @@ const VERIFY = {
       given: 'They gave us the very last two seats.', stem: 'Is this correct English?',
       answer: 0, why: 'Yes — <em>very</em> before a superlative means "precisely that one".' },
     { id: 'v4-6', type: 'build', tag: 'differential', level: 'B2',
-      stem: 'Build a checkable claim.', tiles: ['The', 'express', 'is', 'twenty', 'minutes', 'faster', 'than', 'the', 'local.'],
+      stem: 'Local service 1 h 50, express 1 h 30. Make a claim someone could check.', tiles: ['The', 'express', 'is', 'twenty', 'minutes', 'faster', 'than', 'the', 'local.'],
       solution: 'The express is twenty minutes faster than the local.', why: 'All four slots filled.' }
   ],
   5: [
@@ -2200,11 +2270,11 @@ const VERIFY = {
       stem: 'Which was cheaper?', options: ['The sleeper.', 'The early flight.', 'Both the same.', 'Not stated.'],
       answer: 0, why: '<em>The former</em> is the first of the two just named — the mirror of <em>the latter</em>.' },
     { id: 'v8-5', type: 'choose', tag: 'register', level: 'C1',
-      stem: 'Punctuality rose from 80% to 88%. Which is correct?',
-      options: ['A rise of eight percent.', 'A rise of eight percentage points, or 10%.', 'A rise of 10 percentage points.', 'A rise of 88 percent.'],
-      answer: 1, why: 'Eight percentage points; as a proportion of 80 that is a 10% increase.' },
+      stem: 'Punctuality rose from 50% to 60%. Which is correct?',
+      options: ['A rise of ten percent.', 'A rise of ten percentage points, or 20%.', 'A rise of 20 percentage points.', 'A rise of 60 percent.'],
+      answer: 1, why: 'Ten <strong>percentage points</strong> (60 − 50). Ten out of a starting fifty is one fifth, so a <strong>20% increase</strong>.' },
     { id: 'v8-6', type: 'build', tag: 'register', level: 'C1',
-      stem: 'Build a C1 comparison with both slots filled.',
+      stem: 'The new line cuts roughly 12% off journey times, though it varies by hour. Write it with the figure and a hedge.',
       tiles: ['Journey', 'times', 'are', 'roughly', '12%', 'shorter', 'than', 'those', 'on', 'the', 'old', 'line.'],
       solution: 'Journey times are roughly 12% shorter than those on the old line.',
       why: 'Hedged figure in the differential slot, category-matched standard after <em>than</em>.' }
