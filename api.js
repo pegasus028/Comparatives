@@ -25,6 +25,8 @@
   var LS_URL = 'db.apiUrl';
   var LS_DEMO = 'db.demo.v1';
   var LS_SESSION = 'db.session';
+  var LS_OUTBOX = 'db.outbox.v1';   /* answers written but not yet acknowledged */
+  var LS_TOKEN = 'db.token';        /* per-student session token from the server */
 
   try { API_URL = localStorage.getItem(LS_URL) || API_URL; } catch (e) {}
 
@@ -35,8 +37,23 @@
     sessionId: null,
     sessionStart: 0,
     queue: [],
+    token: null,
     lastError: null
   };
+  try { state.token = localStorage.getItem(LS_TOKEN) || null; } catch (e) {}
+
+  /* ------------------------------------------------------------- outbox
+     Answers are queued here the moment they happen and only cleared once the
+     server has acknowledged them. Because the queue lives in localStorage it
+     survives a reload, a closed laptop lid and a flat battery — which is what
+     lets the app stay quiet about a dropped connection instead of alarming a
+     sixteen-year-old mid-lesson. */
+  function outbox() {
+    try { return JSON.parse(localStorage.getItem(LS_OUTBOX)) || []; } catch (e) { return []; }
+  }
+  function setOutbox(rows) {
+    try { localStorage.setItem(LS_OUTBOX, JSON.stringify(rows.slice(-3000))); } catch (e) {}
+  }
 
   /* -------------------------------------------------------------- storage */
   function db() {
@@ -54,6 +71,7 @@
 
   /* ---------------------------------------------------------------- cloud */
   function post(action, payload) {
+    if (state.token) payload.token = state.token;
     return fetch(state.url, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -177,13 +195,48 @@
     },
 
     register: function (id, pw, name) {
-      return call('register', { id: id, pw: pw, name: name }, function () { return localRegister(id, pw, name); });
+      return call('register', { id: id, pw: pw, name: name }, function () { return localRegister(id, pw, name); })
+        .then(keepToken);
     },
     login: function (id, pw) {
-      return call('login', { id: id, pw: pw }, function () { return localLogin(id, pw); });
+      return call('login', { id: id, pw: pw }, function () { return localLogin(id, pw); })
+        .then(keepToken);
     },
-    save: function (progress, attempts) {
-      return call('save', { progress: progress, attempts: attempts || [] }, function () { return localSave(progress, attempts); });
+
+    /* Queue answers immediately; hand the whole outstanding queue to the
+       server on every attempt, and only clear what it confirms. */
+    enqueue: function (rows) {
+      if (!rows || !rows.length) return;
+      setOutbox(outbox().concat(rows));
+    },
+    pendingCount: function () { return outbox().length; },
+    save: function (progress) {
+      var rows = outbox();
+      var n = rows.length;
+      return call('save', { progress: progress, attempts: rows },
+        function () { return localSave(progress, rows); })
+        .then(function (r) {
+          if (r && r.ok) {
+            var now = outbox();
+            setOutbox(now.slice(n));          /* anything added mid-flight stays */
+          }
+          return r;
+        });
+    },
+
+    /* Last-gasp send when the tab is closing. fetch() is cancelled on unload;
+       sendBeacon is not. */
+    flushBeacon: function (progress) {
+      var rows = outbox();
+      if (!state.url || state.mode !== 'cloud' || !navigator.sendBeacon) return false;
+      try {
+        var body = new Blob([JSON.stringify({
+          action: 'save', payload: { progress: progress, attempts: rows, token: state.token }
+        })], { type: 'text/plain;charset=utf-8' });
+        var ok = navigator.sendBeacon(state.url, body);
+        if (ok) setOutbox([]);
+        return ok;
+      } catch (e) { return false; }
     },
 
     startSession: function (studentId) {
@@ -238,6 +291,18 @@
       var s = db().students[id];
       return Promise.resolve(s ? { ok: true, progress: s.progress } : { ok: false, error: 'No local demo account.' });
     }
+  };
+
+  function keepToken(r) {
+    if (r && r.ok && r.token) {
+      state.token = r.token;
+      try { localStorage.setItem(LS_TOKEN, r.token); } catch (e) {}
+    }
+    return r;
+  }
+  API.clearToken = function () {
+    state.token = null;
+    try { localStorage.removeItem(LS_TOKEN); } catch (e) {}
   };
 
   global.API = API;

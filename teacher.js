@@ -6,7 +6,7 @@
   var C = window.CONTENT, E = window.Engine, P = E.Progress, api = window.API;
   var $ = function (s) { return document.querySelector(s); };
   var esc = E.esc;
-  var T = { roster: [], sel: null, detail: null };
+  var T = { roster: [], sel: null, detail: null, q: '', sort: 'ready', dir: -1 };
 
   function toast(m) {
     $('#toast-slot').innerHTML = '<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--ground);padding:11px 18px;border-radius:99px;font-size:.9rem;font-weight:600;box-shadow:var(--shadow-l)">' + esc(m) + '</div>';
@@ -50,6 +50,8 @@
   $('#pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') enter(); });
   $('#t-out').addEventListener('click', function () { location.reload(); });
   $('#t-refresh').addEventListener('click', function () { load(); toast('Refreshed.'); });
+  var qbox = $('#q');
+  if (qbox) qbox.addEventListener('input', function () { T.q = qbox.value.trim(); paintRoster(); });
 
   /* Confirm the class server is really answering, and say which Sheet it is.
      A silent fall-back to demo data is the one failure a teacher must not miss. */
@@ -104,6 +106,12 @@
       '<div class="stat"><b>' + acc + '%</b><span>Class accuracy</span></div>';
   }
 
+  var COLS = [
+    { k: 'name', t: 'Student' }, { k: 'lvl', t: 'Level' }, { k: 'ready', t: 'Readiness' },
+    { k: 'acc', t: 'Accuracy' }, { k: 'seen', t: 'Items' }, { k: 'streak', t: 'Streak' },
+    { k: 'seen2', t: 'Last seen' }, { k: null, t: '' }
+  ];
+
   function paintRoster() {
     $('#roster-n').textContent = T.roster.length + ' enrolled';
     if (!T.roster.length) {
@@ -120,10 +128,35 @@
       else if (lvl >= 6) flag = '<span class="flag fly">flying</span>';
       return { s: s, p: p, ready: ready, lvl: lvl, acc: acc, flag: flag, stale: stale };
     });
-    rows.sort(function (a, b) { return b.ready - a.ready; });
-    var html = '<thead><tr><th>Student</th><th>Level</th><th>Readiness</th><th>Accuracy</th><th>Items</th><th>Streak</th><th>Last seen</th><th></th></tr></thead><tbody>';
+    if (T.q) {
+      var q = T.q.toLowerCase();
+      rows = rows.filter(function (r) {
+        return (r.p.displayName || '').toLowerCase().indexOf(q) >= 0 || r.s.id.toLowerCase().indexOf(q) >= 0;
+      });
+    }
+    var key = T.sort, dir = T.dir;
+    rows.sort(function (a, b) {
+      var x, y;
+      if (key === 'name') { x = (a.p.displayName || a.s.id).toLowerCase(); y = (b.p.displayName || b.s.id).toLowerCase(); return x < y ? -dir : x > y ? dir : 0; }
+      if (key === 'seen') { x = (a.p.stats || {}).seen || 0; y = (b.p.stats || {}).seen || 0; }
+      else if (key === 'seen2') { x = -a.stale; y = -b.stale; }
+      else if (key === 'streak') { x = a.p.streak || 0; y = b.p.streak || 0; }
+      else { x = a[key] || 0; y = b[key] || 0; }
+      return (x - y) * dir;
+    });
+
+    var html = '<thead><tr>' + COLS.map(function (c) {
+      if (!c.k) return '<th></th>';
+      var on = T.sort === c.k;
+      return '<th class="sortable' + (on ? ' on' : '') + '" data-sort="' + c.k + '" tabindex="0">' +
+        esc(c.t) + (on ? (dir < 0 ? ' ↓' : ' ↑') : '') + '</th>';
+    }).join('') + '</tr></thead><tbody>';
+
+    if (!rows.length) {
+      html += '<tr><td colspan="8"><div class="empty">No student matches “' + esc(T.q) + '”.</div></td></tr>';
+    }
     rows.forEach(function (r) {
-      html += '<tr class="r' + (T.sel === r.s.id ? ' sel' : '') + '" data-id="' + esc(r.s.id) + '">' +
+      html += '<tr class="r' + (T.sel === r.s.id ? ' sel' : '') + '" data-id="' + esc(r.s.id) + '" tabindex="0">' +
         '<td><div class="who2"><b>' + esc(r.p.displayName || r.s.name) + '</b><span>' + esc(r.s.id) + '</span></div></td>' +
         '<td>' + r.lvl + ' · ' + esc(C.RANKS[r.lvl].name) + '</td>' +
         '<td><span class="mini"><i style="width:' + r.ready + '%"></i></span> <span class="num" style="font-family:var(--f-mono);font-size:.78rem">' + r.ready + '%</span></td>' +
@@ -135,7 +168,18 @@
     });
     $('#roster').innerHTML = html + '</tbody>';
     $('#roster').querySelectorAll('tr.r').forEach(function (tr) {
-      tr.addEventListener('click', function () { T.sel = tr.dataset.id; paintRoster(); openStudent(tr.dataset.id); });
+      function open() { T.sel = tr.dataset.id; paintRoster(); openStudent(tr.dataset.id); }
+      tr.addEventListener('click', open);
+      tr.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+    });
+    $('#roster').querySelectorAll('th.sortable').forEach(function (th) {
+      function go() {
+        var k = th.dataset.sort;
+        if (T.sort === k) T.dir = -T.dir; else { T.sort = k; T.dir = k === 'name' ? 1 : -1; }
+        paintRoster();
+      }
+      th.addEventListener('click', go);
+      th.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
     });
   }
 

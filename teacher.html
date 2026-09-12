@@ -39,6 +39,10 @@ table.roster th{
 }
 table.roster td{padding:9px 10px;border-top:1px solid var(--rule-soft);white-space:nowrap}
 table.roster tr.r{cursor:pointer}
+table.roster tr.r:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+table.roster th.sortable{cursor:pointer;user-select:none}
+table.roster th.sortable:hover{color:var(--ink)}
+table.roster th.sortable.on{color:var(--accent)}
 table.roster tr.r:hover td{background:var(--surface-2)}
 table.roster tr.sel td{background:var(--accent-soft)}
 .who2{display:flex;flex-direction:column;gap:1px}
@@ -166,6 +170,7 @@ details.disc>summary .count{
     <div class="grid">
       <div class="card panel">
         <div class="panel-h"><h2>Class roster</h2><span class="kicker" id="roster-n"></span></div>
+        <input type="text" id="q" placeholder="Filter by name or student ID" spellcheck="false" style="margin-bottom:10px">
         <div class="roster-scroll"><table class="roster" id="roster"></table></div>
         <div style="margin-top:16px">
           <div class="panel-h"><h2 style="font-size:.98rem">Where the class is losing marks</h2></div>

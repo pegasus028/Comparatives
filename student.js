@@ -9,7 +9,7 @@
 
   var S = {
     p: null,               // progress object
-    pending: [],           // attempt rows waiting to sync
+    /* answers live in api's persistent outbox, not in memory */
     sessItems: 0, sessCorrect: 0, sandbox: false,
     run: null,             // active run: {kind, items, i, results, lessonId, chId, hinted}
     simple: false,
@@ -36,48 +36,45 @@
   function pct(x) { return Math.round((x || 0) * 100); }
 
   /* --------------------------------------------------------------- sync */
-  function sync(force) {
+  function sync() {
     if (!S.p || S.sandbox) return Promise.resolve();
-    S.p._readiness = P.readiness(S.p);      // derived column for the sheet
-    var batch = S.pending; S.pending = [];
-    return api.save(S.p, batch).then(function (r) {
-      if (!r || !r.ok) { S.pending = batch.concat(S.pending); }
-      return r;
-    }).catch(function () { S.pending = batch.concat(S.pending); });
+    S.p._readiness = P.readiness(S.p);      /* derived column for the sheet */
+    return api.save(S.p).catch(function () { return { ok: false }; });
   }
+  /* Ten seconds, not one and a half. Forty students answering every few
+     seconds would otherwise each rewrite their sheet row constantly and
+     queue behind the script lock. Nothing is at risk in the gap — answers
+     sit in the outbox from the instant they are given. */
   var syncSoon = (function () {
     var t;
-    return function () { clearTimeout(t); t = setTimeout(sync, 1500); };
+    return function () { clearTimeout(t); t = setTimeout(sync, 10000); };
   })();
 
   /* ------------------------------------------------------- connection
      Students never configure anything. The address ships with the page, so
      the session is connected from the first click. If the network drops we
      keep working, hold the unsent answers, and reconnect on our own. */
+  /* Students are never shown connection state. A dropped network is not
+     their problem to solve: answers are queued on the device the moment they
+     are given, the app retries on its own, and the teacher console is where
+     a genuine outage surfaces. The only place a student can see it is
+     Settings, if they go looking. */
   function paintLink() {
     var slot = $('#modebar-slot');
-    if (S.sandbox) {
-      slot.innerHTML = '<div class="wrap"><div class="modebar"><span><b>Preview</b> &nbsp;' +
+    slot.innerHTML = S.sandbox
+      ? '<div class="wrap"><div class="modebar"><span><b>Preview</b> &nbsp;' +
         'This is an example account for looking around. Nothing here is saved or sent to your teacher.' +
-        '</span></div></div>';
-      return;
-    }
-    if (api.mode === 'cloud' || !api.url) { slot.innerHTML = ''; return; }
-    slot.innerHTML = '<div class="wrap"><div class="offline">' +
-      '<b>Offline</b><span>No connection right now. Keep going — everything you answer is held ' +
-      'on this device and sent up as soon as the network is back.</span></div></div>';
+        '</span></div></div>'
+      : '';
   }
   api.onModeChange = function () { paintLink(); };
 
+  /* Quiet reconnect: flip back to cloud and let a real save prove it. */
   setInterval(function () {
-    if (!S.p || S.sandbox || api.mode === 'cloud' || !api.url) return;
-    if (api.retryCloud()) {
-      sync().then(function () {
-        if (api.mode === 'cloud') { paintLink(); toast('Back online — your progress has been sent.'); }
-        else paintLink();
-      });
-    }
-  }, 20000);
+    if (!S.p || S.sandbox) return;
+    if (api.mode !== 'cloud') api.retryCloud();
+    if (api.pendingCount()) sync();
+  }, 15000);
 
   /* =====================================================================
      LOGIN
@@ -179,12 +176,22 @@
   }
 
   function logout() {
-    if (!S.sandbox) api.endSession(S.p.studentId, S.sessItems, S.sessCorrect);
-    sync().then(function () { location.reload(); });
+    if (S.sandbox) { location.reload(); return; }
+    api.endSession(S.p.studentId, S.sessItems, S.sessCorrect);
+    sync().then(function () { api.clearToken(); location.reload(); });
   }
   $('#btn-out').addEventListener('click', logout);
-  window.addEventListener('beforeunload', function () {
-    if (S.p && !S.sandbox) { api.endSession(S.p.studentId, S.sessItems, S.sessCorrect); sync(); }
+  /* fetch() is cancelled when the tab goes; sendBeacon survives it. */
+  function flushOnExit() {
+    if (!S.p || S.sandbox) return;
+    api.endSession(S.p.studentId, S.sessItems, S.sessCorrect);
+    if (!api.flushBeacon(S.p)) sync();
+  }
+  window.addEventListener('pagehide', flushOnExit);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' && S.p && !S.sandbox && api.pendingCount()) {
+      api.flushBeacon(S.p);
+    }
   });
 
   /* ----------------------------------------------------------- header UI */
@@ -230,9 +237,58 @@
     return Math.round((lm * 0.6 + cm * 0.4) * 100);
   }
 
+  /* What should this student do next? One answer, always. */
+  function nextAction(p) {
+    if (p.assignment && !p.assignment.done) {
+      return { kind: 'test', label: 'Take your level check', sub: p.assignment.itemIds.length + ' questions set by your teacher' };
+    }
+    for (var i = 0; i < C.STAGES.length; i++) {
+      var st = C.STAGES[i];
+      if (!P.stageUnlocked(p, st)) break;
+      for (var j = 0; j < st.lessons.length; j++) {
+        var ls = st.lessons[j], rec = p.lessons[ls.id];
+        if (!rec || rec.best < E.PASS_LESSON) {
+          return { kind: 'lesson', st: st, id: ls.id, label: ls.name,
+                   sub: st.gate + ' · ' + st.name + ' · ' + ls.cefr };
+        }
+      }
+      var ch = p.challenges[st.challenge.id];
+      if (!ch || ch.best < E.PASS_CHALLENGE) {
+        return { kind: 'challenge', st: st, id: st.id, label: st.challenge.name,
+                 sub: st.gate + ' · pass at 75% to open the next gate' };
+      }
+    }
+    var due = P.dueReview(p).length;
+    if (due) return { kind: 'review', label: 'Clear your standby list', sub: due + (due === 1 ? ' question is' : ' questions are') + ' due for review' };
+    return null;
+  }
+
   function paintMap() {
     var p = S.p, r = P.rank(p);
-    var html = '<div class="sect-h"><div>' +
+    var next = nextAction(p);
+
+    /* Open the stage they are actually working in, so a new student is not
+       met by eight closed boxes. */
+    if (S.stageOpen === null && next && next.st) S.stageOpen = next.st.id;
+
+    var html = '';
+    if (next) {
+      html += '<button class="resume" id="resume">' +
+        (next.st ? E.artBand(next.st.art, 'resume-art') : '') +
+        '<span class="resume-t">' +
+          '<span class="kicker">' + (next.kind === 'challenge' ? 'Next gate' : next.kind === 'test' ? 'From your teacher' : next.kind === 'review' ? 'Standby' : 'Pick up where you left off') + '</span>' +
+          '<span class="resume-n">' + esc(next.label) + '</span>' +
+          '<span class="resume-s">' + esc(next.sub) + '</span>' +
+        '</span><span class="resume-go">Start →</span></button>';
+    } else {
+      html += '<div class="resume done"><span class="resume-t">' +
+        '<span class="kicker">All eight gates cleared</span>' +
+        '<span class="resume-n">You are a Frequent Flyer</span>' +
+        '<span class="resume-s">Nothing is due. Replay any gate to push your score higher.</span>' +
+        '</span></div>';
+    }
+
+    html += '<div class="sect-h"><div>' +
       '<h2>Your trip</h2>' +
       '<p style="color:var(--ink-2);font-size:.92rem;margin-top:4px">' + esc(r.note) + '</p>' +
       '</div><span class="pill on">' + P.stageClearedCount(p) + ' of 8 gates cleared</span></div>';
@@ -286,6 +342,13 @@
     html += '</div>';
     $('#view-map').innerHTML = html;
 
+    var res = $('#resume');
+    if (res) res.addEventListener('click', function () {
+      if (next.kind === 'lesson') openLesson(next.id);
+      else if (next.kind === 'challenge') startChallenge(next.id);
+      else if (next.kind === 'review') show('review');
+      else if (next.kind === 'test') show('test');
+    });
     $('#view-map').querySelectorAll('[data-toggle]').forEach(function (b) {
       b.addEventListener('click', function () {
         S.stageOpen = S.stageOpen === b.dataset.toggle ? null : b.dataset.toggle;
@@ -358,6 +421,7 @@
 
   function renderQ() {
     var r = S.run, item = r.items[r.i];
+    if (r.cleanup) { r.cleanup(); r.cleanup = null; }
     var prog = Math.round(100 * r.i / r.items.length);
     var canHint = r.kind === 'lesson' || r.kind === 'review';
     var timed = r.kind !== 'test' && !!TIMED_TYPES[item.type];
@@ -380,7 +444,7 @@
       '<div class="card qcard">' +
         '<div class="qtype"><span>' + esc(E.TYPE_LABEL[item.type] || 'Question') + '</span><span class="lv">' + esc(item.level) + '</span></div>' +
         '<div id="qhost"></div>' +
-        '<div id="feedback"></div>' +
+        '<div id="feedback" role="status" aria-live="polite"></div>' +
         '<div class="qfoot">' +
           (canHint ? '<button class="btn sm" id="p-hint">Hint</button>' : '') +
           '<span class="grow"></span>' +
@@ -444,7 +508,7 @@
       row.given = String(out.givenText).slice(0, 160);
       row.expected = String(out.expectedText).slice(0, 160);
       row.mode = r.kind;
-      S.pending.push(row);
+      api.enqueue([row]);
       S.sessItems++;
       if (out.correct) { S.sessCorrect++; r.combo = (r.combo || 0) + 1; } else { r.combo = 0; }
       r.results.push({ item: item, correct: out.correct, given: out.givenText, expected: out.expectedText });
@@ -476,6 +540,16 @@
       r.i++;
       if (r.i >= r.items.length) finishRun(); else renderQ();
     }
+
+    /* Enter checks, then Enter advances — so a keyboard user never reaches
+       for the mouse between questions. */
+    function onKey(e) {
+      if (e.key !== 'Enter' || e.target.tagName === 'INPUT') return;
+      var btn = $('#p-check');
+      if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+    }
+    document.addEventListener('keydown', onKey);
+    r.cleanup = function () { document.removeEventListener('keydown', onKey); };
   }
 
   /* =====================================================================
@@ -483,6 +557,7 @@
      ===================================================================== */
   function finishRun() {
     var r = S.run;
+    if (r.cleanup) { r.cleanup(); r.cleanup = null; }
     var correct = r.results.filter(function (x) { return x.correct; }).length;
     var score = correct / r.results.length;
     var passed, head, note;
@@ -504,6 +579,7 @@
         if (allHere) S.p._nonstop = true;
       }
     } else if (r.kind === 'test') {
+      if (!S.p.assignment) S.p.assignment = { level: 1, itemIds: [] };
       S.p.assignment.done = true;
       S.p.assignment.score = score;
       S.p.assignment.completedAt = new Date().toISOString();
@@ -677,10 +753,12 @@
         '<div class="field"><label>Reading level</label>' +
         '<button class="btn sm" id="s-simple" style="align-self:flex-start">' +
         (S.simple ? 'Theory is in simple English — switch back' : 'Use simpler English in the theory') + '</button></div>' +
-        '<div class="field"><label>Class server</label>' +
+        '<div class="field"><label>Saving</label>' +
         '<p style="font-size:.9rem;color:var(--ink-2)">' +
-        (linked ? 'Connected. Everything you do is saved to your teacher\'s class sheet automatically.'
-                : 'Not reachable at the moment. Your answers are being held on this device and will be sent as soon as the connection returns.') +
+        (linked && !api.pendingCount()
+          ? 'Everything you have answered has been sent to your teacher.'
+          : 'You have ' + api.pendingCount() + ' answer' + (api.pendingCount() === 1 ? '' : 's') +
+            ' waiting to be sent. They are saved on this device and go up on their own — you do not need to do anything.') +
         '</p></div>' +
         '<div class="field"><label>Account</label>' +
         '<button class="btn sm" id="s-out" style="align-self:flex-start">Log out</button></div>' +
