@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Departure Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="theme.css">
+<style>
+/* ======================= STUDENT CONSOLE ============================== */
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px}
+.hidden{display:none!important}
+
+/* ---------------------------------------------------------- login card */
+#screen-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px 16px}
+.boarding{
+  width:100%;max-width:460px;background:var(--surface);border-radius:var(--r-l);
+  box-shadow:var(--shadow-l);overflow:hidden;border:1px solid var(--rule-soft);
+}
+.boarding-top{padding:26px var(--pad) 20px;background:var(--accent);color:var(--accent-ink)}
+.boarding-top .kicker{color:var(--accent-ink);opacity:.72}
+.boarding-top h1{font-size:2.1rem;line-height:1;margin:10px 0 8px;font-weight:800}
+.boarding-top p{font-size:.92rem;opacity:.82;line-height:1.45}
+.perf{height:14px;background:var(--accent);position:relative}
+.perf::after{
+  content:"";position:absolute;inset:auto 0 -7px;height:14px;
+  background:radial-gradient(circle at 7px 7px, var(--surface) 6px, transparent 6.5px) repeat-x;
+  background-size:14px 14px;
+}
+.boarding-body{padding:24px var(--pad) 22px;display:flex;flex-direction:column;gap:14px}
+.tabs{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:var(--r-m)}
+.tab{
+  flex:1;padding:8px;border:none;background:transparent;border-radius:var(--r-s);
+  font-weight:600;font-size:.9rem;color:var(--ink-2);cursor:pointer;
+}
+.tab.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-s)}
+.msg{font-size:.88rem;padding:10px 12px;border-radius:var(--r-m);line-height:1.45}
+.msg.bad{background:var(--no-soft);color:var(--no)}
+.msg.info{background:var(--surface-2);color:var(--ink-2)}
+.tiny{font-size:.78rem;color:var(--ink-3);line-height:1.5}
+
+/* ------------------------------------------------------ boarding header */
+.bp{position:sticky;top:0;z-index:20;background:var(--ground);border-bottom:1px solid var(--rule)}
+.bp-in{max-width:880px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bp-id{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1 1 150px}
+.bp-name{font-family:var(--f-display);font-weight:700;font-size:1.02rem;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bp-rank{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.gauge{flex:2 1 190px;display:flex;flex-direction:column;gap:4px;min-width:150px}
+.gauge-top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.gauge-top b{font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar{height:7px;background:var(--surface-3);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .5s ease}
+.bar.thin{height:5px}
+.bar.gold span{background:var(--gold)}
+.bp-stats{display:flex;gap:7px;flex:0 0 auto}
+.chip{
+  display:flex;flex-direction:column;align-items:center;gap:0;padding:5px 9px;border-radius:var(--r-m);
+  background:var(--surface);border:1px solid var(--rule-soft);min-width:48px;
+}
+.chip b{font-family:var(--f-mono);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.chip span{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.chip.streak b{color:var(--gold)}
+.nav{display:flex;gap:2px;max-width:880px;margin:0 auto;padding:0 12px 8px;overflow-x:auto}
+.nav button{
+  border:none;background:transparent;padding:7px 11px;border-radius:var(--r-m);cursor:pointer;
+  font-family:var(--f-mono);font-size:10px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);white-space:nowrap;
+}
+.nav button.on{background:var(--accent-soft);color:var(--accent)}
+.nav button:hover{color:var(--ink)}
+
+/* ---------------------------------------------------------------- gates */
+main{padding-block:22px 72px}
+.sect-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.sect-h h2{font-size:1.45rem}
+.gates{display:flex;flex-direction:column;gap:0;position:relative}
+.gates::before{content:"";position:absolute;left:21px;top:24px;bottom:24px;width:2px;background:var(--rule)}
+.gate{position:relative;padding-left:52px;padding-bottom:10px}
+.dot{
+  position:absolute;left:13px;top:16px;width:18px;height:18px;border-radius:50%;
+  background:var(--ground);border:2px solid var(--rule);z-index:1;
+}
+.gate.done .dot{background:var(--ok);border-color:var(--ok)}
+.gate.open .dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.gate-card{
+  width:100%;text-align:left;background:var(--surface);border:1px solid var(--rule-soft);
+  border-radius:var(--r-l);box-shadow:var(--shadow-s);overflow:hidden;
+}
+.gate.locked .gate-card{opacity:.58}
+.gate-head{
+  width:100%;display:flex;gap:12px;align-items:flex-start;padding:15px 16px;
+  background:none;border:none;cursor:pointer;text-align:left;
+}
+.gate.locked .gate-head{cursor:not-allowed}
+.gate-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.gate-line1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gate-n{font-family:var(--f-mono);font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--ink-3)}
+.gate-name{font-family:var(--f-display);font-weight:700;font-size:1.08rem;line-height:1.2}
+.gate-blurb{font-size:.88rem;color:var(--ink-2);line-height:1.45}
+.gate-prog{display:flex;align-items:center;gap:9px}
+.gate-prog .bar{flex:1}
+.gate-pct{font-family:var(--f-mono);font-size:10px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.caret{flex:0 0 auto;color:var(--ink-3);font-size:1.1rem;padding-top:2px;transition:transform .18s}
+.gate.exp .caret{transform:rotate(90deg)}
+.gate-body{border-top:1px solid var(--rule-soft);padding:6px 8px 10px}
+.lrow{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:11px 10px;
+  background:none;border:none;border-radius:var(--r-m);cursor:pointer;
+}
+.lrow:hover:not([disabled]){background:var(--surface-2)}
+.lrow[disabled]{opacity:.5;cursor:not-allowed}
+.lrow-tick{
+  flex:0 0 auto;width:21px;height:21px;border-radius:50%;border:2px solid var(--rule);
+  display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--surface);
+}
+.lrow.done .lrow-tick{background:var(--ok);border-color:var(--ok)}
+.lrow.done .lrow-tick::after{content:"✓"}
+.lrow-txt{flex:1;min-width:0}
+.lrow-name{display:block;font-weight:600;font-size:.95rem;line-height:1.3}
+.lrow-sub{display:block;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:2px}
+.lrow-score{font-family:var(--f-mono);font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.lrow.chal{border-top:1px dashed var(--rule);margin-top:4px;border-radius:0 0 var(--r-m) var(--r-m)}
+.lrow.chal .lrow-name{color:var(--gold)}
+
+/* ---------------------------------------------------------------- play */
+.play{max-width:660px;margin:0 auto}
+.play-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.play-top .bar{flex:1}
+.qcount{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.theory{padding:var(--pad);display:flex;flex-direction:column;gap:14px}
+.theory h3{font-size:1.35rem;line-height:1.15}
+.theory .key{
+  font-size:1.02rem;line-height:1.45;font-weight:600;border-left:3px solid var(--gold);
+  padding-left:14px;color:var(--ink);
+}
+.theory .prose p{font-size:.97rem;line-height:1.6;color:var(--ink-2);margin-bottom:.75em}
+.theory .prose p:last-child{margin-bottom:0}
+.theory .prose em{font-style:italic;color:var(--ink)}
+.theory .prose strong{color:var(--ink)}
+.theory .prose u{text-decoration-color:var(--accent-line);text-underline-offset:3px}
+.exlist{display:flex;flex-direction:column;gap:10px;background:var(--surface-2);padding:14px;border-radius:var(--r-m)}
+.exlist .s{font-size:.98rem;font-style:italic}
+.exlist .s s{opacity:.62}
+.exlist .g{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink-3);margin-top:3px;line-height:1.4}
+.simple-btn{align-self:flex-start}
+.qcard{padding:var(--pad);display:flex;flex-direction:column;gap:0}
+.qtype{
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px;display:flex;justify-content:space-between;gap:10px;
+}
+.qtype .lv{color:var(--ink-3)}
+#qhost{margin-bottom:16px}
+.qfoot{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.qfoot .grow{flex:1}
+#feedback{margin-bottom:14px}
+
+/* --------------------------------------------------------- result panel */
+.result{padding:var(--pad);text-align:center;display:flex;flex-direction:column;gap:16px;align-items:center}
+.score-ring{
+  width:124px;height:124px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--accent) calc(var(--p)*1%), var(--surface-3) 0);
+}
+.score-ring i{
+  width:98px;height:98px;border-radius:50%;background:var(--surface);display:grid;place-items:center;
+  font-family:var(--f-display);font-weight:800;font-size:1.9rem;font-style:normal;font-variant-numeric:tabular-nums;
+}
+.result h3{font-size:1.4rem}
+.result p{color:var(--ink-2);font-size:.95rem;max-width:34rem}
+.misslist{width:100%;text-align:left;display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.miss{background:var(--surface-2);border-radius:var(--r-m);padding:11px 13px;font-size:.9rem;line-height:1.45}
+.miss b{display:block;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--no);margin-bottom:4px}
+
+/* -------------------------------------------------------------- passport */
+.stamps{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.stamp{
+  aspect-ratio:1;border-radius:var(--r-m);border:2px dashed var(--rule);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  text-align:center;padding:8px;color:var(--ink-3);
+}
+.stamp.got{border-style:solid;border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:rotate(-2deg)}
+.stamp b{font-family:var(--f-display);font-size:.8rem;line-height:1.1;font-weight:700}
+.stamp span{font-family:var(--f-mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase}
+.badges{display:grid;grid-template-columns:1fr;gap:9px}
+@media (min-width:620px){.badges{grid-template-columns:1fr 1fr}}
+.badge{display:flex;gap:12px;align-items:flex-start;min-width:0;padding:13px 14px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--rule-soft)}
+.badge.locked{opacity:.5}
+.badge-i{
+  flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  background:var(--surface-2);color:var(--ink-3);font-family:var(--f-mono);font-size:13px;font-weight:600;
+}
+.badge.got .badge-i{background:var(--gold-soft);color:var(--gold)}
+.badge-n{display:block;font-weight:700;font-size:.95rem;font-family:var(--f-display);line-height:1.25}
+.badge-p{display:block;font-size:.85rem;color:var(--ink-2);line-height:1.4}
+.badge-h{display:block;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;color:var(--ink-3);margin-top:3px;line-height:1.4}
+
+/* ---------------------------------------------------------------- misc */
+.empty{padding:34px 20px;text-align:center;color:var(--ink-3);font-size:.93rem}
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;
+  background:var(--ink);color:var(--ground);padding:11px 18px;border-radius:99px;
+  font-size:.9rem;font-weight:600;box-shadow:var(--shadow-l);max-width:90vw;
+}
+.modal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:rgba(10,11,22,.62);padding:20px}
+.modal-card{
+  background:var(--surface);border-radius:var(--r-l);padding:28px var(--pad);max-width:400px;width:100%;
+  text-align:center;box-shadow:var(--shadow-l);display:flex;flex-direction:column;gap:12px;align-items:center;
+}
+.modal-card .seal{
+  width:74px;height:74px;border-radius:50%;background:var(--gold-soft);color:var(--gold);
+  display:grid;place-items:center;font-family:var(--f-mono);font-size:22px;font-weight:600;
+  border:2px solid var(--gold);transform:rotate(-6deg);
+}
+.modebar{
+  max-width:880px;margin:10px auto 0;padding:9px 14px;border-radius:var(--r-m);
+  background:var(--gold-soft);color:var(--gold);font-size:.82rem;line-height:1.45;
+  display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+}
+.modebar b{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase}
+.settings{display:flex;flex-direction:column;gap:14px;padding:var(--pad)}
+.settings .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.settings .row .field{flex:1;min-width:200px}
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="screen-login">
+  <div class="boarding">
+    <div class="boarding-top">
+      <p class="kicker">Satriwithaya English Programme</p>
+      <h1>Departure Board</h1>
+      <p>Comparatives and superlatives, eight gates, one trip. Get to Frequent Flyer.</p>
+    </div>
+    <div class="perf"></div>
+    <div class="boarding-body">
+      <div class="tabs" role="tablist">
+        <button class="tab on" id="tab-in" role="tab">Log in</button>
+        <button class="tab" id="tab-new" role="tab">Create account</button>
+      </div>
+      <div class="field">
+        <label for="f-id">Student ID</label>
+        <input type="text" id="f-id" autocomplete="username" placeholder="e.g. m5-ploy" spellcheck="false">
+      </div>
+      <div class="field hidden" id="wrap-name">
+        <label for="f-name">Your name</label>
+        <input type="text" id="f-name" autocomplete="name" placeholder="How your teacher will see you">
+      </div>
+      <div class="field">
+        <label for="f-pw">Password</label>
+        <input type="password" id="f-pw" autocomplete="current-password" placeholder="Choose something you'll remember">
+      </div>
+      <div id="login-msg" class="msg info hidden"></div>
+      <button class="btn primary wide" id="btn-go">Log in</button>
+      <button class="btn ghost wide" id="btn-demo">Try it first — open a demo account</button>
+      <p class="tiny">Your ID and password are yours to choose. Keep them simple; your teacher can see your progress but not your password.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="screen-app" class="hidden">
+  <header class="bp">
+    <div class="bp-in">
+      <div class="bp-id">
+        <span class="bp-name" id="hdr-name">—</span>
+        <span class="bp-rank" id="hdr-rank">—</span>
+      </div>
+      <div class="gauge">
+        <div class="gauge-top"><span>Trip readiness</span><b id="hdr-ready">0%</b></div>
+        <div class="bar"><span id="hdr-bar" style="width:0%"></span></div>
+      </div>
+      <div class="bp-stats">
+        <div class="chip streak"><b id="hdr-streak">0</b><span>Streak</span></div>
+        <div class="chip"><b id="hdr-xp">0</b><span>XP</span></div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button data-view="map" class="on">Roadmap</button>
+      <button data-view="review">Standby<span id="nav-review"></span></button>
+      <button data-view="pass">Passport</button>
+      <button data-view="test">Level check<span id="nav-test"></span></button>
+      <button data-view="settings">Settings</button>
+      <button id="btn-out">Log out</button>
+    </nav>
+  </header>
+
+  <div id="modebar-slot"></div>
+
+  <main class="wrap">
+    <section id="view-map"></section>
+    <section id="view-play" class="hidden"></section>
+    <section id="view-review" class="hidden"></section>
+    <section id="view-pass" class="hidden"></section>
+    <section id="view-test" class="hidden"></section>
+    <section id="view-settings" class="hidden"></section>
+  </main>
+</div>
+
+<div id="toast-slot"></div>
+<div id="modal-slot"></div>
+
+<!-- ===================================================================
+     CLASS SERVER — the Apps Script Web App this console talks to.
+     Change this one line if you redeploy the script to a new URL.
+     A student who saves a different address under Settings overrides it
+     on their own device only.
+     =================================================================== -->
+<script>window.DB_API_URL = 'https://script.google.com/macros/s/AKfycbyFjTVQfIvo4EHrLG-zXOSF7ap-8NLXPacvtFq33Q-5EdkJMfHiz6U-xvAAok31HHSJ/exec';</script>
+
+<script src="content.js"></script>
+<script src="engine.js"></script>
+<script src="api.js"></script>
+<script src="student.js"></script>
+</body>
+</html>

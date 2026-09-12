@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Departure Board — Control Tower</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="theme.css">
+<style>
+/* ======================= TEACHER CONSOLE ============================== */
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px}
+.hidden{display:none!important}
+
+#gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.gatecard{width:100%;max-width:380px;padding:28px var(--pad);display:flex;flex-direction:column;gap:14px}
+.gatecard h1{font-size:1.8rem;line-height:1.05}
+
+header.top{border-bottom:1px solid var(--rule);background:var(--surface);position:sticky;top:0;z-index:30}
+.top-in{max-width:1180px;margin:0 auto;padding:13px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.top-in h1{font-size:1.18rem;flex:1 1 auto}
+.top-in .sub{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);display:block;margin-top:2px}
+
+main{padding-block:20px 80px}
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:1000px){.grid{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr)}}
+
+.panel{padding:16px var(--pad) var(--pad)}
+.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.panel-h h2{font-size:1.08rem}
+
+/* --------------------------------------------------------------- roster */
+.roster-scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:var(--r-m)}
+table.roster{border-collapse:collapse;width:100%;min-width:620px;font-size:.86rem}
+table.roster th{
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);
+  text-align:left;padding:9px 10px;background:var(--surface-2);white-space:nowrap;position:sticky;top:0;
+}
+table.roster td{padding:9px 10px;border-top:1px solid var(--rule-soft);white-space:nowrap}
+table.roster tr.r{cursor:pointer}
+table.roster tr.r:hover td{background:var(--surface-2)}
+table.roster tr.sel td{background:var(--accent-soft)}
+.who2{display:flex;flex-direction:column;gap:1px}
+.who2 b{font-weight:600}
+.who2 span{font-family:var(--f-mono);font-size:9.5px;color:var(--ink-3)}
+.mini{width:64px;height:6px;background:var(--surface-3);border-radius:99px;overflow:hidden;display:inline-block;vertical-align:middle}
+.mini i{display:block;height:100%;background:var(--accent)}
+.flag{font-family:var(--f-mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:99px}
+.flag.stall{background:var(--no-soft);color:var(--no)}
+.flag.new{background:var(--accent-soft);color:var(--accent)}
+.flag.fly{background:var(--ok-soft);color:var(--ok)}
+
+/* ---------------------------------------------------------- disclosure */
+details.disc{border:1px solid var(--rule);border-radius:var(--r-m);margin-bottom:10px;background:var(--surface)}
+details.disc>summary{
+  cursor:pointer;list-style:none;padding:11px 14px;display:flex;align-items:center;gap:10px;
+  font-weight:600;font-size:.92rem;
+}
+details.disc>summary::-webkit-details-marker{display:none}
+details.disc>summary::before{content:"▸";color:var(--ink-3);transition:transform .15s}
+details.disc[open]>summary::before{transform:rotate(90deg)}
+details.disc>summary .count{
+  margin-left:auto;font-family:var(--f-mono);font-size:10px;color:var(--ink-3);font-variant-numeric:tabular-nums;
+}
+.disc-body{padding:0 14px 14px;border-top:1px solid var(--rule-soft)}
+.logtable{width:100%;border-collapse:collapse;font-size:.8rem;font-family:var(--f-mono)}
+.logtable th{text-align:left;padding:7px 8px;color:var(--ink-3);font-size:9px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--rule)}
+.logtable td{padding:6px 8px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+.logtable tr.bad td{background:var(--no-soft)}
+.logtable .g{color:var(--ink-3)}
+.logscroll{max-height:340px;overflow:auto;margin-top:8px;border-radius:var(--r-s)}
+
+/* ------------------------------------------------------------- report */
+.rep-block{border-left:3px solid var(--no);padding-left:14px;margin-bottom:18px}
+.rep-block.good{border-left-color:var(--ok)}
+.rep-h{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:6px}
+.rep-h h4{font-family:var(--f-display);font-size:1rem;font-weight:700}
+.rep-rate{font-family:var(--f-mono);font-size:10px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.rep-p{font-size:.9rem;line-height:1.55;color:var(--ink-2);margin-bottom:8px}
+.rep-teach{
+  font-size:.88rem;line-height:1.55;background:var(--surface-2);padding:11px 13px;border-radius:var(--r-m);
+  margin-bottom:8px;
+}
+.rep-teach b{font-family:var(--f-mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:5px}
+.rep-acts{list-style:none;padding:0;display:flex;flex-direction:column;gap:7px}
+.rep-acts li{display:flex;gap:9px;font-size:.88rem;line-height:1.5;color:var(--ink-2)}
+.rep-acts li::before{content:"→";color:var(--accent);flex:0 0 auto;font-weight:700}
+
+/* --------------------------------------------------------------- class */
+.heat{display:flex;flex-direction:column;gap:5px}
+.heat-row{display:grid;grid-template-columns:1fr 96px 44px;gap:10px;align-items:center;font-size:.85rem}
+.heat-bar{height:9px;background:var(--surface-3);border-radius:99px;overflow:hidden}
+.heat-bar i{display:block;height:100%;background:var(--no)}
+.heat-n{font-family:var(--f-mono);font-size:10px;color:var(--ink-3);text-align:right;font-variant-numeric:tabular-nums}
+
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.stat4{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:14px}
+@media (min-width:520px){.stat4{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--surface-2);border-radius:var(--r-m);padding:11px 13px}
+.stat b{display:block;font-family:var(--f-display);font-size:1.5rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-family:var(--f-mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+
+/* --------------------------------------------------------------- print */
+#printable{display:none}
+@media print{
+  body>*{display:none!important}
+  #printable{display:block!important;padding:0;font-family:Georgia,serif;color:#000;background:#fff}
+  #printable .pq{page-break-inside:avoid;margin-bottom:16px}
+  #printable .key{page-break-before:always}
+  #printable h2{font-size:16pt;margin:0 0 4pt}
+  #printable .meta{font-size:9pt;color:#444;margin-bottom:14pt}
+  #printable .pq b{font-size:11pt}
+  #printable .pq ol{margin:4pt 0 0 18pt;font-size:11pt}
+  #printable .pq .ctx{font-size:10pt;font-style:italic;margin:2pt 0}
+  #printable table{border-collapse:collapse;font-size:9.5pt;margin:4pt 0}
+  #printable table td,#printable table th{border:1px solid #999;padding:2pt 6pt}
+}
+.empty{padding:30px 18px;text-align:center;color:var(--ink-3);font-size:.92rem}
+.tiny{font-size:.78rem;color:var(--ink-3);line-height:1.5}
+.msg{font-size:.88rem;padding:10px 12px;border-radius:var(--r-m)}
+.msg.bad{background:var(--no-soft);color:var(--no)}
+.modebar{
+  max-width:1180px;margin:10px auto 0;padding:9px 14px;border-radius:var(--r-m);
+  background:var(--gold-soft);color:var(--gold);font-size:.82rem;display:flex;gap:10px;
+  align-items:center;justify-content:space-between;flex-wrap:wrap;
+}
+.modebar b{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="card gatecard">
+    <p class="kicker">Departure Board</p>
+    <h1>Control Tower</h1>
+    <p style="color:var(--ink-2);font-size:.92rem">Teacher console. Everything your class does, and what to do about it.</p>
+    <div class="field"><label for="pin">Teacher PIN</label>
+      <input type="password" id="pin" placeholder="••••" autocomplete="current-password"></div>
+    <div class="field"><label for="url">Class server address (optional)</label>
+      <input type="text" id="url" placeholder="https://script.google.com/macros/s/…/exec" spellcheck="false"></div>
+    <div id="gate-msg" class="msg bad hidden"></div>
+    <button class="btn primary wide" id="gate-go">Open the tower</button>
+    <p class="tiny">The class server address is already filled in. Clear it to read the demo data stored in this browser instead; the demo PIN is <strong>1234</strong>.</p>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <header class="top">
+    <div class="top-in">
+      <div style="flex:1">
+        <h1>Control Tower</h1>
+        <span class="sub" id="top-sub">—</span>
+      </div>
+      <div class="tools">
+        <button class="btn sm" id="t-refresh">Refresh</button>
+        <button class="btn sm" id="t-csv">Export CSV</button>
+        <button class="btn sm ghost" id="t-out">Close</button>
+      </div>
+    </div>
+  </header>
+  <div id="modebar-slot"></div>
+
+  <main class="wrap">
+    <div class="stat4" id="stats"></div>
+    <div class="grid">
+      <div class="card panel">
+        <div class="panel-h"><h2>Class roster</h2><span class="kicker" id="roster-n"></span></div>
+        <div class="roster-scroll"><table class="roster" id="roster"></table></div>
+        <div style="margin-top:16px">
+          <div class="panel-h"><h2 style="font-size:.98rem">Where the class is losing marks</h2></div>
+          <div class="heat" id="heat"></div>
+        </div>
+      </div>
+      <div class="card panel" id="detail"><div class="empty">Select a student to see their log, their diagnosis, and to set a level check.</div></div>
+    </div>
+  </main>
+</div>
+
+<div id="printable"></div>
+<div id="toast-slot"></div>
+
+<!-- ===================================================================
+     CLASS SERVER — the Apps Script Web App the Control Tower reads from.
+     Change this one line if you redeploy the script to a new URL.
+     A student who saves a different address under Settings overrides it
+     on their own device only.
+     =================================================================== -->
+<script>window.DB_API_URL = 'https://script.google.com/macros/s/AKfycbyFjTVQfIvo4EHrLG-zXOSF7ap-8NLXPacvtFq33Q-5EdkJMfHiz6U-xvAAok31HHSJ/exec';</script>
+
+<script src="content.js"></script>
+<script src="engine.js"></script>
+<script src="api.js"></script>
+<script src="teacher.js"></script>
+</body>
+</html>
